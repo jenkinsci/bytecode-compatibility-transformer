@@ -25,13 +25,13 @@ class Foo {
         }
 
         // field j is gone!
-        boolean[] _j = {true,false};
-        @AdaptField
-        boolean[] j() {
+        static boolean[] _j = {true,false};
+        @AdaptField("j")
+        static boolean[] getJ() {
             return _j;
         }
-        @AdaptField
-        void j(boolean[] v) {
+        @AdaptField("j")
+        static void setJ(boolean[] v) {
             _j=v;
         }
     }

@@ -64,9 +64,10 @@ public class Transformer {
                                 LOGGER.log(Level.FINE, "Rewrote reference to {3}.{4} in {0}.{1}{2}",
                                         new Object[]{className,methodName,methodDescriptor,owner,name});
 
-                                modified[0] = true;
-                                fr.visitFieldInsn(opcode,owner,name,desc,base);
-                                return;
+                                if (fr.visitFieldInsn(opcode,owner,name,desc,base)) {
+                                    modified[0] = true;
+                                    return;
+                                }
                             }
                         }
                         super.visitFieldInsn(opcode, owner, name, desc);
