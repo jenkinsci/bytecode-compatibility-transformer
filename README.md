@@ -109,3 +109,9 @@ This is convenient when you change the field type to a subtype of what it used t
 When you do this, a necessary cast operator is inserted both during get and set.
 This allows you to adapt any reference type to any other reference type, not just to a subtype,
 but obviously the actual execution of the code can fail with `ClassCastException`.
+
+
+Sibling Projects
+================
+For adapting methods, see [bridge method injector](http://bridge-method-injector.infradna.com/) that provides
+a related functionality but without a need for runtime class transformation.
