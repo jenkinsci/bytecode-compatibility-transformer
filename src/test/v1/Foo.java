@@ -5,5 +5,11 @@ class Foo {
         List x = new ArrayList();
         Object[] y;
         Inner z;
+
+        static final String s = "hello";
+
+        int i;
+
+        static boolean[] j = {true,false};
     }
 }

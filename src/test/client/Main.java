@@ -29,4 +29,22 @@ public class Main extends TestCase {
         i = i.z;
         System.out.println(i);
     }
+
+    public void testFooS() {
+        assertEquals("hello",Foo.Inner.s);
+        assertEquals("hello",i.s);
+    }
+
+    public void testFooI() {
+        i.i = 5;
+        i.i += 3;
+        assertEquals(i.i,8);
+    }
+
+    public void testFooJ() {
+        assertTrue(Foo.Inner.j[0]);
+        assertFalse(Foo.Inner.j[1]);
+        Foo.Inner.j = new boolean[0];
+        assertEquals(0,Foo.Inner.j.length);
+    }
 }

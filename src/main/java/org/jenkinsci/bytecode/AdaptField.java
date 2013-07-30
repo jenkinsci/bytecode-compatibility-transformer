@@ -2,6 +2,7 @@ package org.jenkinsci.bytecode;
 
 import org.jvnet.hudson.annotation_indexer.Indexed;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
@@ -27,7 +28,11 @@ import static java.lang.annotation.RetentionPolicy.*;
  * @author Kohsuke Kawaguchi
  */
 @Retention(RUNTIME)
-@Target(FIELD)
+@Target({FIELD,METHOD})
 @Indexed
-public @interface Adapt {
+public @interface AdaptField {
+    /**
+     * Name of the field that's being adapted.
+     */
+    String value() default "";
 }
