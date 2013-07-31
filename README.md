@@ -56,10 +56,28 @@ module system in question, but for example, with `AntClassLoader` in Ant you can
 
     AntClassLoader cl = new AntClassLoader() {
         @Override
-        protected Class<?> defineClassFromData(File container, byte[] classData, String classname) throws IOException {
-            return super.defineClassFromData(container, t.transform(classname,classData), classname);
+        protected Class<?> defineClassFromData(File container, byte[] classData, String className) throws IOException {
+            return super.defineClassFromData(container, t.transform(className,classData), className);
         }
     };
+
+Using This Library
+==================
+
+The Maven coordinates is as follows:
+
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>bytecode-compatibility-transformer</artifactId>
+      <version>1.1</version>
+    </dependency>
+
+    <repositories>
+      <repository>
+        <id>repo.jenkins-ci.org</id>
+        <url>http://repo.jenkins-ci.org/public/</url>
+      </repository>
+    </repositories>
 
 
 What Can Be Adapted
