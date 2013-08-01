@@ -12,7 +12,12 @@ class ClassRewriteSpec {
     /**
      * Fields to rewrite. From the name of the field to its correct descriptor.
      */
-    final Map<String,FieldRewriteSpec> fields = new HashMap<String,FieldRewriteSpec>();
+    final Map<String,MemberRewriteSpec> fields = new HashMap<String,MemberRewriteSpec>();
+
+    /**
+     * Methods to rewrite. From the name of the method to its correct descriptor.
+     */
+    final Map<String,MemberRewriteSpec> methods = new HashMap<String,MemberRewriteSpec>();
 
     public ClassRewriteSpec(String internalName) {
         this.internalName = internalName;

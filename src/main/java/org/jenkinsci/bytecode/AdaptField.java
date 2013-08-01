@@ -2,7 +2,6 @@ package org.jenkinsci.bytecode;
 
 import org.jvnet.hudson.annotation_indexer.Indexed;
 
-import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 

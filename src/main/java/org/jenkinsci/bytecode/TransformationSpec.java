@@ -33,7 +33,7 @@ class TransformationSpec {
 
                     String name = af.value();
                     if (name.length()==0)   name = f.getName(); // default to the same name
-                    r.fields.put(name,FieldRewriteSpec.toField(f));
+                    r.fields.put(name, MemberRewriteSpec.fieldToField(f));
                 }
                 if (e instanceof Method) {
                     Method m = (Method) e;
@@ -42,8 +42,8 @@ class TransformationSpec {
                     String name = af.value();
                     if (name.length()==0)   name = m.getName(); // default to the same name
 
-                    FieldRewriteSpec existing = r.fields.get(name);
-                    r.fields.put(name,FieldRewriteSpec.toMethod(m).compose(existing));
+                    MemberRewriteSpec existing = r.fields.get(name);
+                    r.fields.put(name, MemberRewriteSpec.fieldToMethod(m).compose(existing));
                 }
             }
         }

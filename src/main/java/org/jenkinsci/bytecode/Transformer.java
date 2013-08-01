@@ -65,10 +65,28 @@ public class Transformer {
 
                 return new MethodAdapter(base) {
                     @Override
+                    public void visitMethodInsn(int opcode, String owner, String name, String desc) {
+                        ClassRewriteSpec o = spec.rewrites.get(owner);
+                        if (o!=null) {
+                            MemberRewriteSpec fr = o.methods.get(name);
+                            if (fr!=null) {
+                                LOGGER.log(Level.FINE, "Rewrote reference to {3}.{4}{5} in {0}.{1}{2}",
+                                        new Object[]{className,methodName,methodDescriptor,owner,name,desc});
+
+                                if (fr.visitMethodInsn(opcode,owner,name,desc,base)) {
+                                    modified[0] = true;
+                                    return;
+                                }
+                            }
+                        }
+                        super.visitMethodInsn(opcode, owner, name, desc);
+                    }
+
+                    @Override
                     public void visitFieldInsn(int opcode, String owner, String name, String desc) {
                         ClassRewriteSpec o = spec.rewrites.get(owner);
                         if (o!=null) {
-                            FieldRewriteSpec fr = o.fields.get(name);
+                            MemberRewriteSpec fr = o.fields.get(name);
                             if (fr!=null) {
                                 LOGGER.log(Level.FINE, "Rewrote reference to {3}.{4} in {0}.{1}{2}",
                                         new Object[]{className,methodName,methodDescriptor,owner,name});

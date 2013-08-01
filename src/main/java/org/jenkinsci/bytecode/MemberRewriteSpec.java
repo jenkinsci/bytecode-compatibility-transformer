@@ -15,23 +15,36 @@ import static org.kohsuke.asm3.Type.*;
  *
  * @author Kohsuke Kawaguchi
  */
-abstract class FieldRewriteSpec {
-    abstract boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate);
+abstract class MemberRewriteSpec {
+    boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
+        return false;
+    }
+
+    boolean visitMethodInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
+        return false;
+    }
+
 
     /**
      * Used to merge setter rewrite spec to getter rewrite spec.
      *
      * TODO: improve error handling.
      */
-    FieldRewriteSpec compose(final FieldRewriteSpec rhs) {
+    MemberRewriteSpec compose(final MemberRewriteSpec rhs) {
         if (rhs==null)  return this;
 
-        final FieldRewriteSpec lhs = this;
-        return new FieldRewriteSpec() {
+        final MemberRewriteSpec lhs = this;
+        return new MemberRewriteSpec() {
             @Override
             boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
                 return lhs.visitFieldInsn(opcode, owner, name, desc, delegate)
                     || rhs.visitFieldInsn(opcode, owner, name, desc, delegate);
+            }
+
+            @Override
+            boolean visitMethodInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
+                return lhs.visitMethodInsn(opcode, owner, name, desc, delegate)
+                    || rhs.visitMethodInsn(opcode, owner, name, desc, delegate);
             }
         };
     }
@@ -39,13 +52,13 @@ abstract class FieldRewriteSpec {
     /**
      * Rewrites a field reference to another field access.
      */
-    static FieldRewriteSpec toField(Field f) {
+    static MemberRewriteSpec fieldToField(Field f) {
         final String newName = f.getName();
         final Type newType = Type.getType(f.getType());
         final String newTypeDescriptor = newType.getDescriptor();
         final String newTypeInternalName = isReferenceType(newType) ? newType.getInternalName() : null;
 
-        return new FieldRewriteSpec() {
+        return new MemberRewriteSpec() {
             @Override
             boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
                 switch (opcode) {
@@ -71,7 +84,7 @@ abstract class FieldRewriteSpec {
         };
     }
 
-    static FieldRewriteSpec toMethod(Method m) {
+    static MemberRewriteSpec fieldToMethod(Method m) {
         final String methodName = m.getName();
         final String methodDescriptor = Type.getMethodDescriptor(m);
 
@@ -79,7 +92,7 @@ abstract class FieldRewriteSpec {
 
         if (Modifier.isStatic(m.getModifiers())) {
             if (isGetter) {
-                return new FieldRewriteSpec() {
+                return new MemberRewriteSpec() {
                     @Override
                     boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
                         switch (opcode) {
@@ -96,7 +109,7 @@ abstract class FieldRewriteSpec {
                     }
                 };
             } else {
-                return new FieldRewriteSpec() {
+                return new MemberRewriteSpec() {
                     @Override
                     boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
                         switch (opcode) {
@@ -112,7 +125,7 @@ abstract class FieldRewriteSpec {
             }
         } else {// instance method
             if (isGetter) {
-                return new FieldRewriteSpec() {
+                return new MemberRewriteSpec() {
                     @Override
                     boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
                         switch (opcode) {
@@ -129,7 +142,7 @@ abstract class FieldRewriteSpec {
                     }
                 };
             } else {
-                return new FieldRewriteSpec() {
+                return new MemberRewriteSpec() {
                     @Override
                     boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
                         switch (opcode) {
