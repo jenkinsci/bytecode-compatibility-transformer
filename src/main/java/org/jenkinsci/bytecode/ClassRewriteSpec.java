@@ -19,7 +19,16 @@ class ClassRewriteSpec {
      */
     final Map<String,MemberRewriteSpec> methods = new HashMap<String,MemberRewriteSpec>();
 
-    public ClassRewriteSpec(String internalName) {
+    ClassRewriteSpec(String internalName) {
         this.internalName = internalName;
+    }
+
+    /**
+     * Copy constructor
+     */
+    ClassRewriteSpec(ClassRewriteSpec that) {
+        this.internalName = that.internalName;
+        this.fields.putAll(that.fields);
+        this.methods.putAll(that.methods);
     }
 }

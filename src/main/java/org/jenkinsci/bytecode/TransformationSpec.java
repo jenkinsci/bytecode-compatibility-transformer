@@ -10,13 +10,13 @@ import org.kohsuke.asm3.Type;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static java.util.logging.Level.WARNING;
+import static java.util.logging.Level.*;
 import static org.jenkinsci.constant_pool_scanner.ConstantType.*;
 
 /**
@@ -31,24 +31,31 @@ class TransformationSpec {
     TransformationSpec() {
     }
 
-    public TransformationSpec(Collection<? extends ClassLoader> loaders) throws IOException {
-        for (ClassLoader cl : loaders) {
-            for (Class<? extends Annotation> annotation : Index.list(AdapterAnnotation.class,cl,Class.class)) {
-                AdapterAnnotationParser f;
-                AdapterAnnotation aa = annotation.getAnnotation(AdapterAnnotation.class);
-                try {
-                    f = aa.value().newInstance();
-                } catch (InstantiationException e) {
-                    LOGGER.log(Level.WARNING, "Failed to instantiate "+aa.value(),e);
-                    continue;
-                } catch (IllegalAccessException e) {
-                    LOGGER.log(Level.WARNING, "Failed to instantiate " + aa.value(), e);
-                    continue;
-                }
+    /**
+     * Copy constructor.
+     */
+    TransformationSpec(TransformationSpec that) {
+        for (Entry<String, ClassRewriteSpec> e : that.rewrites.entrySet()) {
+            rewrites.put(e.getKey(),new ClassRewriteSpec(e.getValue()));
+        }
+    }
 
-                for (AnnotatedElement e : Index.list(annotation, cl)) {
-                    f.parse(this, e);
-                }
+    void loadRule(ClassLoader cl) throws IOException {
+        for (Class<? extends Annotation> annotation : Index.list(AdapterAnnotation.class,cl,Class.class)) {
+            AdapterAnnotationParser f;
+            AdapterAnnotation aa = annotation.getAnnotation(AdapterAnnotation.class);
+            try {
+                f = aa.value().newInstance();
+            } catch (InstantiationException e) {
+                LOGGER.log(Level.WARNING, "Failed to instantiate "+aa.value(),e);
+                continue;
+            } catch (IllegalAccessException e) {
+                LOGGER.log(Level.WARNING, "Failed to instantiate " + aa.value(), e);
+                continue;
+            }
+
+            for (AnnotatedElement e : Index.list(annotation, cl)) {
+                f.parse(this, e);
             }
         }
     }

@@ -29,10 +29,18 @@ public class Transformer {
      * Scans the rewrite instructions and prepare to rewrite classes that refer to them
      * accordingly.
      *
+     * <p>
+     * The effects of this method is cumulative.
+     * The added rules are stored on top of what's already in this transformer.
+     *
      * This method is concurrency safe, and can be invoked even when Transformer is already being in use.
      */
-    public void loadRules(Collection<? extends ClassLoader> loaders) throws IOException {
-        spec = new TransformationSpec(loaders);
+    public synchronized void loadRules(Collection<? extends ClassLoader> loaders) throws IOException {
+        TransformationSpec spec = new TransformationSpec(this.spec);
+        for (ClassLoader cl : loaders) {
+            spec.loadRule(cl);
+        }
+        this.spec = spec;
     }
 
     /**
