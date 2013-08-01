@@ -1,12 +1,21 @@
 package org.jenkinsci.bytecode;
 
 import org.jvnet.hudson.annotation_indexer.Indexed;
+import org.kohsuke.asm3.MethodVisitor;
+import org.kohsuke.asm3.Type;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Field;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.*;
+import static org.kohsuke.asm3.Opcodes.*;
+import static org.kohsuke.asm3.Type.*;
 
 /**
  * Rewrites a field reference by adapting the type of the field.
@@ -29,9 +38,140 @@ import static java.lang.annotation.RetentionPolicy.*;
 @Retention(RUNTIME)
 @Target({FIELD,METHOD})
 @Indexed
+@AdapterAnnotation(AdaptField.FactoryImpl.class)
 public @interface AdaptField {
     /**
      * Name of the field that's being adapted.
      */
     String value() default "";
+
+    public static class FactoryImpl extends AdapterAnnotationParser {
+        @Override
+        void parse(TransformationSpec spec, AnnotatedElement e) {
+            AdaptField af = e.getAnnotation(AdaptField.class);
+            Member mem = (Member)e;
+
+            String name = af.value();
+            if (name.length()==0)   name = mem.getName(); // default to the same name
+
+            if (e instanceof Field)
+                spec.addFieldRewriteSpec(mem.getDeclaringClass(), name, fieldToField((Field) e));
+            if (e instanceof Method)
+                spec.addMethodRewriteSpec(mem.getDeclaringClass(), name, fieldToMethod((Method) e));
+        }
+
+        /**
+         * Rewrites a field reference to another field access.
+         */
+        MemberRewriteSpec fieldToField(Field f) {
+            final String newName = f.getName();
+            final Type newType = Type.getType(f.getType());
+            final String newTypeDescriptor = newType.getDescriptor();
+            final String newTypeInternalName = isReferenceType(newType) ? newType.getInternalName() : null;
+
+            return new MemberRewriteSpec() {
+                @Override
+                boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
+                    switch (opcode) {
+                    case GETFIELD:
+                    case GETSTATIC:
+                        // rewrite "x.y" to "(T)x.z".
+                        // we'll leave it up to HotSpot to optimize away casts
+                        delegate.visitFieldInsn(opcode, owner, newName, newTypeDescriptor);
+                        Type t = Type.getType(desc);
+                        if (isReferenceType(t))
+                            delegate.visitTypeInsn(CHECKCAST, t.getInternalName());
+                        return true;
+                    case PUTFIELD:
+                    case PUTSTATIC:
+                        // rewrite "x.y=v" to "x.z=(T)v"
+                        if (isReferenceType(newType))
+                            delegate.visitTypeInsn(CHECKCAST, newTypeInternalName);
+                        delegate.visitFieldInsn(opcode, owner, newName, newTypeDescriptor);
+                        return true;
+                    }
+                    return false;
+                }
+            };
+        }
+
+        MemberRewriteSpec fieldToMethod(Method m) {
+            final String methodName = m.getName();
+            final String methodDescriptor = Type.getMethodDescriptor(m);
+
+            boolean isGetter = m.getParameterTypes().length==0;
+
+            if (Modifier.isStatic(m.getModifiers())) {
+                if (isGetter) {
+                    return new MemberRewriteSpec() {
+                        @Override
+                        boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
+                            switch (opcode) {
+                            case GETSTATIC:
+                                // rewrite "X.y" to "(T)X.z()".
+                                // we'll leave it up to HotSpot to optimize away casts
+                                delegate.visitMethodInsn(INVOKESTATIC, owner, methodName, methodDescriptor);
+                                Type t = Type.getType(desc);
+                                if (isReferenceType(t))
+                                    delegate.visitTypeInsn(CHECKCAST, t.getInternalName());
+                                return true;
+                            }
+                            return false;
+                        }
+                    };
+                } else {
+                    return new MemberRewriteSpec() {
+                        @Override
+                        boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
+                            switch (opcode) {
+                            case PUTSTATIC:
+                                // rewrite "X.y=v" to "X.z(v)"
+                                // we expect the argument type to match
+                                delegate.visitMethodInsn(INVOKESTATIC, owner, methodName, methodDescriptor);
+                                return true;
+                            }
+                            return false;
+                        }
+                    };
+                }
+            } else {// instance method
+                if (isGetter) {
+                    return new MemberRewriteSpec() {
+                        @Override
+                        boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
+                            switch (opcode) {
+                            case GETFIELD:
+                                // rewrite "x.y" to "(T)x.z()".
+                                // we'll leave it up to HotSpot to optimize away casts
+                                delegate.visitMethodInsn(INVOKEVIRTUAL,owner,methodName,methodDescriptor);
+                                Type t = Type.getType(desc);
+                                if (isReferenceType(t))
+                                    delegate.visitTypeInsn(CHECKCAST, t.getInternalName());
+                                return true;
+                            }
+                            return false;
+                        }
+                    };
+                } else {
+                    return new MemberRewriteSpec() {
+                        @Override
+                        boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
+                            switch (opcode) {
+                            case PUTFIELD:
+                                // rewrite "x.y=v" to "x.z(v)"
+                                // we expect the argument type to match
+                                delegate.visitMethodInsn(INVOKEVIRTUAL, owner, methodName, methodDescriptor);
+                                return true;
+                            }
+                            return false;
+                        }
+                    };
+                }
+            }
+        }
+
+        private static boolean isReferenceType(Type t) {
+            return t.getSort()== ARRAY || t.getSort()== OBJECT;
+        }
+    }
 }
