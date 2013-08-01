@@ -1,16 +1,22 @@
 package org.jenkinsci.bytecode;
 
+import org.jenkinsci.constant_pool_scanner.ConstantPoolScanner;
+import org.jenkinsci.constant_pool_scanner.ConstantType;
+import org.jenkinsci.constant_pool_scanner.FieldRefConstant;
 import org.kohsuke.asm3.ClassAdapter;
 import org.kohsuke.asm3.ClassReader;
 import org.kohsuke.asm3.ClassWriter;
 import org.kohsuke.asm3.MethodAdapter;
 import org.kohsuke.asm3.MethodVisitor;
 
+import java.io.DataInput;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static java.util.logging.Level.*;
 
 /**
  * Transform byte code where code references bytecode rewrite annotations.
@@ -44,6 +50,9 @@ public class Transformer {
      *
      */
     public byte[] transform(final String className, byte[] image) {
+        if (!scanFieldReference(image))
+            return image;
+
         ClassReader cr = new ClassReader(image);
         ClassWriter cw = new ClassWriter(/*ClassWriter.COMPUTE_FRAMES|*/ClassWriter.COMPUTE_MAXS);
 
@@ -78,6 +87,31 @@ public class Transformer {
 
         if (!modified[0])  return image;            // untouched
         return cw.toByteArray();
+    }
+
+    /**
+     * Looks the constant pool and determine if this class file may possibly require a rewrite.
+     */
+    private boolean scanFieldReference(byte[] image) {
+        try {
+            for (FieldRefConstant r : ConstantPoolScanner.parse(image, ConstantType.FIELD_REF).list(FieldRefConstant.class)) {
+                ClassRewriteSpec s = spec.rewrites.get(r.getClazz());
+                if (s!=null)
+                    if (s.fields.get(r.getName())!=null)
+                        return true;
+            }
+            return false;
+        } catch (IOException e) {
+            LOGGER.log(WARNING, "Failed to parse the constant pool",e);
+            return false;
+        }
+    }
+
+    private static void skip(DataInput input, int bytes) throws IOException {
+        int skipped = input.skipBytes(bytes);
+        if (skipped != bytes) {
+            throw new IOException("Truncated class file");
+        }
     }
 
     private static final Logger LOGGER = Logger.getLogger(Transformer.class.getName());
