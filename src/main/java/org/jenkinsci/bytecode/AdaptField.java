@@ -57,7 +57,7 @@ public @interface AdaptField {
             if (e instanceof Field)
                 spec.addFieldRewriteSpec(mem.getDeclaringClass(), name, fieldToField((Field) e));
             if (e instanceof Method)
-                spec.addMethodRewriteSpec(mem.getDeclaringClass(), name, fieldToMethod((Method) e));
+                spec.addFieldRewriteSpec(mem.getDeclaringClass(), name, fieldToMethod((Method) e));
         }
 
         /**
