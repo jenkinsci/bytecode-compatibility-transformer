@@ -1,6 +1,9 @@
 package org.jenkinsci.bytecode;
 
 import org.kohsuke.asm3.MethodVisitor;
+import org.kohsuke.asm3.Type;
+
+import java.lang.reflect.Member;
 
 /**
  * Rewrites field access.
@@ -8,7 +11,22 @@ import org.kohsuke.asm3.MethodVisitor;
  * @author Kohsuke Kawaguchi
  */
 abstract class MemberRewriteSpec {
-    ClassRewriteSpec owner;
+    /**
+     * Type that declared the member that is being rewritten.
+     */
+    final Type owner;
+
+    protected MemberRewriteSpec(Type owner) {
+        this.owner = owner;
+    }
+
+    protected MemberRewriteSpec(Class owner) {
+        this.owner = Type.getType(owner);
+    }
+
+    protected MemberRewriteSpec(Member member) {
+        this(member.getDeclaringClass());
+    }
 
     boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
         return false;
@@ -19,6 +37,9 @@ abstract class MemberRewriteSpec {
     }
 
     /**
+     * Merges multiple {@link MemberRewriteSpec}s that rewrite
+     * different accesses to the same member.
+     *
      * Used to merge setter rewrite spec to getter rewrite spec.
      *
      * TODO: improve error handling.
@@ -26,8 +47,10 @@ abstract class MemberRewriteSpec {
     MemberRewriteSpec compose(final MemberRewriteSpec rhs) {
         if (rhs==null)  return this;
 
+        assert this.owner.equals(rhs.owner);
+
         final MemberRewriteSpec lhs = this;
-        return new MemberRewriteSpec() {
+        return new MemberRewriteSpec(owner) {
             @Override
             boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
                 return lhs.visitFieldInsn(opcode, owner, name, desc, delegate)

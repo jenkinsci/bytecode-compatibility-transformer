@@ -12,7 +12,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
@@ -26,14 +25,47 @@ import static org.jenkinsci.constant_pool_scanner.ConstantType.*;
  */
 class TransformationSpec {
     /**
-     * From internal name of class/interface to its details of rewrite.
+     * Fields by their name and type (but without the owner class) that requires rewriting.
+     *
+     * The matching needs to happen without taking the owner class into account because
+     * when a subtype refers to a field in a super type, javac generates field reference
+     * with the owner type set to the sub type, and let JVM resolve it to the correct super type.
      */
-    final Map<String,ClassRewriteSpec> rewrites = new HashMap<String,ClassRewriteSpec>();
+    final RewriteMap fields = new RewriteMap(); // maybe we need to add type here too to narrow the search
 
     /**
-     * Name + descriptor that requires rewriting.
+     * Methods by their name and type (but without the owner class.)
      */
-    Map<NameAndType,Set<ClassRewriteSpec>> fields = new HashMap<NameAndType,Set<ClassRewriteSpec>>(); // maybe we need to add type here too to narrow the search
+    final RewriteMap methods = new RewriteMap(); // maybe we need to add type here too to narrow the search
+
+    class RewriteMap extends HashMap<NameAndType,Set<MemberRewriteSpec>> {
+        void copyFrom(RewriteMap rhs) {
+            for (Entry<NameAndType,Set<MemberRewriteSpec>> e : rhs.entrySet()) {
+                put(e.getKey(),new HashSet<MemberRewriteSpec>(e.getValue()));
+            }
+        }
+
+        void addRewriteSpec(String name, Class[] types, MemberRewriteSpec c) {
+            OUTER:
+            for (Class type : types) {
+                NameAndType key = new NameAndType(Type.getDescriptor(type),name);
+
+                Set<MemberRewriteSpec> specs = get(key);
+                if (specs==null)  put(key, specs = new HashSet<MemberRewriteSpec>());
+
+                for (MemberRewriteSpec existing : specs) {
+                    if (existing.owner.equals(c.owner)) {
+                        // this transformer rewrites different access to the same member
+                        specs.remove(existing);
+                        specs.add(c.compose(existing));
+                        continue OUTER;
+                    }
+                }
+
+                specs.add(c);
+            }
+        }
+    }
 
     TransformationSpec() {
     }
@@ -42,9 +74,8 @@ class TransformationSpec {
      * Copy constructor.
      */
     TransformationSpec(TransformationSpec that) {
-        for (Entry<String, ClassRewriteSpec> e : that.rewrites.entrySet()) {
-            rewrites.put(e.getKey(),new ClassRewriteSpec(e.getValue()));
-        }
+        this.fields.copyFrom(that.fields);
+        this.methods.copyFrom(that.methods);
     }
 
     void loadRule(ClassLoader cl) throws IOException {
@@ -79,8 +110,7 @@ class TransformationSpec {
                     return true;
             }
             for (MethodRefConstant r : p.list(MethodRefConstant.class)) {
-                ClassRewriteSpec s = rewrites.get(r.getClazz());
-                if (s!=null && s.methods.get(r.getName())!=null)
+                if (methods.containsKey(new NameAndType(r)))
                     return true;
             }
             return false;
@@ -88,36 +118,6 @@ class TransformationSpec {
             LOGGER.log(WARNING, "Failed to parse the constant pool",e);
             return false;
         }
-    }
-
-    private ClassRewriteSpec createClassRewrite(Class c) {
-        String name = Type.getInternalName(c);
-        ClassRewriteSpec r = rewrites.get(name);
-        if (r==null)
-            rewrites.put(name,r=new ClassRewriteSpec(name));
-        return r;
-    }
-
-    void addFieldRewriteSpec(Class owner, String name, Class[] types, MemberRewriteSpec spec) {
-        ClassRewriteSpec c = createClassRewrite(owner);
-        spec = spec.compose(c.fields.get(name));
-        spec.owner = c;
-        c.fields.put(name, spec);
-
-        for (Class type : types) {
-            NameAndType key = new NameAndType(Type.getDescriptor(type),name);
-
-            Set<ClassRewriteSpec> classes = fields.get(key);
-            if (classes==null)  fields.put(key,classes=new HashSet<ClassRewriteSpec>());
-            classes.add(c);
-        }
-    }
-
-    void addMethodRewriteSpec(Class owner, String name, MemberRewriteSpec spec) {
-        ClassRewriteSpec c = createClassRewrite(owner);
-        spec = spec.compose(c.methods.get(name));
-        spec.owner = c;
-        c.methods.put(name, spec);
     }
 
     private static final Logger LOGGER = Logger.getLogger(TransformationSpec.class.getName());

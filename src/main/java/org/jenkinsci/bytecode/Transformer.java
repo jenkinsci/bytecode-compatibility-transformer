@@ -6,14 +6,12 @@ import org.kohsuke.asm3.ClassWriter;
 import org.kohsuke.asm3.Label;
 import org.kohsuke.asm3.MethodAdapter;
 import org.kohsuke.asm3.MethodVisitor;
-import org.kohsuke.asm3.Opcodes;
 import org.kohsuke.asm3.Type;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.kohsuke.asm3.Opcodes.*;
@@ -76,54 +74,43 @@ public class Transformer {
                 return new MethodAdapter(base) {
                     @Override
                     public void visitMethodInsn(int opcode, String owner, String name, String desc) {
-                        ClassRewriteSpec o = spec.rewrites.get(owner);
-                        if (o!=null) {
-                            MemberRewriteSpec fr = o.methods.get(name);
-                            if (fr!=null) {
-                                LOGGER.log(Level.FINE, "Rewrote reference to {3}.{4}{5} in {0}.{1}{2}",
-                                        new Object[]{className,methodName,methodDescriptor,owner,name,desc});
-
-                                if (fr.visitMethodInsn(opcode, owner, name, desc, base)) {
-                                    modified[0] = true;
-                                    return;
-                                }
-                            }
-                        }
-                        super.visitMethodInsn(opcode, owner, name, desc);
+                        rewrite(opcode,owner,name,desc,Selector.METHOD, spec.methods.get(new NameAndType(desc, name)));
                     }
 
                     @Override
                     public void visitFieldInsn(int opcode, String owner, String name, String desc) {
-                        Set<ClassRewriteSpec> candidates = spec.fields.get(new NameAndType(desc,name));
-                        if (candidates!=null) {
+                        rewrite(opcode,owner,name,desc,Selector.FIELD, spec.fields.get(new NameAndType(desc, name)));
+                    }
+
+                    public void rewrite(int opcode, String owner, String name, String desc, Selector s, Set<MemberRewriteSpec> specs) {
+                        if (specs !=null) {
                             Label end = new Label();
                             Label next = new Label();
-                            for (ClassRewriteSpec c : candidates) {
+                            for (MemberRewriteSpec fr : specs) {
                                 base.visitLabel(next);
                                 next = new Label();
-                                base.visitLdcInsn(c.type);
+                                base.visitLdcInsn(fr.owner);
                                 base.visitLdcInsn(Type.getObjectType(owner));
                                 base.visitMethodInsn(INVOKEVIRTUAL,"java/lang/Class","isAssignableFrom","(Ljava/lang/Class;)Z");
                                 base.visitJumpInsn(IFEQ,next);
 
                                 // if assignable
-                                MemberRewriteSpec fr = c.fields.get(name);
-                                if (fr.visitFieldInsn(opcode,owner,name,desc,base)) {
+                                if (s.visit(fr,opcode,owner,name,desc,base)) {
                                     modified[0] = true;
                                 } else {
                                     // failed to rewrite
-                                    base.visitFieldInsn(opcode, owner, name, desc);
+                                    s.visit(base, opcode, owner, name, desc);
                                 }
 
                                 base.visitJumpInsn(GOTO,end);
                             }
 
                             base.visitLabel(next);      // if this field turns out to be unrelated
-                            base.visitFieldInsn(opcode, owner, name, desc);
+                            s.visit(base, opcode, owner, name, desc);
 
                             base.visitLabel(end);   // all branches join here
                         } else {
-                            base.visitFieldInsn(opcode, owner, name, desc);
+                            s.visit(base, opcode, owner, name, desc);
                         }
                     }
                 };

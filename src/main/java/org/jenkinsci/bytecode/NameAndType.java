@@ -1,6 +1,6 @@
 package org.jenkinsci.bytecode;
 
-import org.jenkinsci.constant_pool_scanner.FieldRefConstant;
+import org.jenkinsci.constant_pool_scanner.MemberRefConstant;
 
 import java.lang.reflect.Member;
 
@@ -18,7 +18,7 @@ final class NameAndType {
         this.name = name;
     }
 
-    NameAndType(FieldRefConstant ref) {
+    NameAndType(MemberRefConstant ref) {
         this(ref.getDescriptor(),ref.getName());
     }
 

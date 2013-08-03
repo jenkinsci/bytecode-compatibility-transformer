@@ -67,7 +67,7 @@ public @interface AdaptField {
             if (e instanceof Method)
                 mrs = fieldToMethod((Method) e);
             assert mrs!=null;
-            spec.addFieldRewriteSpec(mem.getDeclaringClass(), name, af.was(), mrs);
+            spec.fields.addRewriteSpec(name, af.was(), mrs);
         }
 
         /**
@@ -79,7 +79,7 @@ public @interface AdaptField {
             final String newTypeDescriptor = newType.getDescriptor();
             final String newTypeInternalName = isReferenceType(newType) ? newType.getInternalName() : null;
 
-            return new MemberRewriteSpec() {
+            return new MemberRewriteSpec(f) {
                 @Override
                 boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
                     switch (opcode) {
@@ -117,7 +117,7 @@ public @interface AdaptField {
 
             if (Modifier.isStatic(m.getModifiers())) {
                 if (isGetter) {
-                    return new MemberRewriteSpec() {
+                    return new MemberRewriteSpec(m) {
                         @Override
                         boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
                             switch (opcode) {
@@ -138,7 +138,7 @@ public @interface AdaptField {
                         }
                     };
                 } else {
-                    return new MemberRewriteSpec() {
+                    return new MemberRewriteSpec(m) {
                         @Override
                         boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
                             switch (opcode) {
@@ -159,7 +159,7 @@ public @interface AdaptField {
                 }
             } else {// instance method
                 if (isGetter) {
-                    return new MemberRewriteSpec() {
+                    return new MemberRewriteSpec(m) {
                         @Override
                         boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
                             switch (opcode) {
@@ -180,7 +180,7 @@ public @interface AdaptField {
                         }
                     };
                 } else {
-                    return new MemberRewriteSpec() {
+                    return new MemberRewriteSpec(m) {
                         @Override
                         boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
                             switch (opcode) {
