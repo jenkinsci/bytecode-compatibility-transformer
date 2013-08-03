@@ -164,7 +164,7 @@ public @interface AdaptField {
 
             @Override
             boolean adapt(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
-                if (opcode==invokeOpcode) {
+                if (opcode==fieldOpcode) {
                     Type t = Type.getType(desc);
                     boolean expectedReference = isReferenceType(t);
 
@@ -188,7 +188,7 @@ public @interface AdaptField {
 
             @Override
             boolean adapt(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
-                if (opcode== fieldOpcode) {
+                if (opcode==fieldOpcode) {
                     Type t = Type.getType(desc);
                     boolean expectedReference = isReferenceType(t);
 

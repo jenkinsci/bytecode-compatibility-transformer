@@ -33,4 +33,9 @@ final class NameAndType {
     public int hashCode() {
         return 31*name.hashCode() + descriptor.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return name+' '+descriptor;
+    }
 }
