@@ -74,44 +74,12 @@ public class Transformer {
                 return new MethodAdapter(base) {
                     @Override
                     public void visitMethodInsn(int opcode, String owner, String name, String desc) {
-                        rewrite(opcode,owner,name,desc, Kind.METHOD, spec.methods.get(new NameAndType(desc, name)));
+                        modified[0] |= spec.methods.rewrite(opcode,owner,name,desc,base);
                     }
 
                     @Override
                     public void visitFieldInsn(int opcode, String owner, String name, String desc) {
-                        rewrite(opcode,owner,name,desc, Kind.FIELD, spec.fields.get(new NameAndType(desc, name)));
-                    }
-
-                    public void rewrite(int opcode, String owner, String name, String desc, Kind s, Set<MemberAdapter> specs) {
-                        if (specs !=null) {
-                            Label end = new Label();
-                            Label next = new Label();
-                            for (MemberAdapter fr : specs) {
-                                base.visitLabel(next);
-                                next = new Label();
-                                base.visitLdcInsn(fr.owner);
-                                base.visitLdcInsn(Type.getObjectType(owner));
-                                base.visitMethodInsn(INVOKEVIRTUAL,"java/lang/Class","isAssignableFrom","(Ljava/lang/Class;)Z");
-                                base.visitJumpInsn(IFEQ,next);
-
-                                // if assignable
-                                if (s.visit(fr,opcode,owner,name,desc,base)) {
-                                    modified[0] = true;
-                                } else {
-                                    // failed to rewrite
-                                    s.visit(base, opcode, owner, name, desc);
-                                }
-
-                                base.visitJumpInsn(GOTO,end);
-                            }
-
-                            base.visitLabel(next);      // if this field turns out to be unrelated
-                            s.visit(base, opcode, owner, name, desc);
-
-                            base.visitLabel(end);   // all branches join here
-                        } else {
-                            s.visit(base, opcode, owner, name, desc);
-                        }
+                        modified[0] |= spec.fields.rewrite(opcode,owner,name,desc,base);
                     }
                 };
             }
@@ -120,15 +88,4 @@ public class Transformer {
         if (!modified[0])  return image;            // untouched
         return cw.toByteArray();
     }
-
-    /**
-     * Inserts a debug println into the byte code.
-     */
-    private void println(MethodVisitor base, String msg) {
-        base.visitFieldInsn(GETSTATIC, "java/lang/System","out","Ljava/io/PrintStream;");
-        base.visitLdcInsn(msg);
-        base.visitMethodInsn(INVOKEVIRTUAL, "java/io/PrintStream","println","(Ljava/lang/String;)V");
-    }
-
-    private static final Logger LOGGER = Logger.getLogger(Transformer.class.getName());
 }

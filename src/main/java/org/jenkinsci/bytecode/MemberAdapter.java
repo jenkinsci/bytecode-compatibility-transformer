@@ -28,11 +28,7 @@ abstract class MemberAdapter {
         this(member.getDeclaringClass());
     }
 
-    boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
-        return false;
-    }
-
-    boolean visitMethodInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
+    boolean adapt(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
         return false;
     }
 
@@ -52,15 +48,9 @@ abstract class MemberAdapter {
         final MemberAdapter lhs = this;
         return new MemberAdapter(owner) {
             @Override
-            boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
-                return lhs.visitFieldInsn(opcode, owner, name, desc, delegate)
-                    || rhs.visitFieldInsn(opcode, owner, name, desc, delegate);
-            }
-
-            @Override
-            boolean visitMethodInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
-                return lhs.visitMethodInsn(opcode, owner, name, desc, delegate)
-                    || rhs.visitMethodInsn(opcode, owner, name, desc, delegate);
+            boolean adapt(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
+                return lhs.adapt(opcode, owner, name, desc, delegate)
+                    || rhs.adapt(opcode, owner, name, desc, delegate);
             }
         };
     }

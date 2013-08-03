@@ -67,7 +67,10 @@ public @interface AdaptField {
             if (e instanceof Method)
                 mrs = fieldToMethod((Method) e);
             assert mrs!=null;
-            spec.fields.addRewriteSpec(name, af.was(), mrs);
+
+            for (Class was : af.was()) {
+                spec.fields.addRewriteSpec(name, was, mrs);
+            }
         }
 
         /**
@@ -81,7 +84,7 @@ public @interface AdaptField {
 
             return new MemberAdapter(f) {
                 @Override
-                boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
+                boolean adapt(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
                     switch (opcode) {
                     case GETFIELD:
                     case GETSTATIC:
@@ -129,6 +132,9 @@ public @interface AdaptField {
         }
 
         private static class FieldToMethodAdapter extends MemberAdapter {
+            /**
+             * In this VM, what's the actual type of the value? is it primitive (as opposed to reference?)
+             */
             final boolean actuallyPrimitive;
             final String methodName;
             final String methodDescriptor;
@@ -144,7 +150,6 @@ public @interface AdaptField {
                 Class<?>[] params = m.getParameterTypes();
                 boolean isGetter = params.length==0;
 
-                // in this VM, what's the actual type of the value? is it primitive (as opposed to reference?)
                 actuallyPrimitive = isGetter ? m.getReturnType().isPrimitive() : params[0].isPrimitive();
 
                 this.fieldOpcode = fieldOpcode;
@@ -158,7 +163,7 @@ public @interface AdaptField {
             }
 
             @Override
-            boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
+            boolean adapt(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
                 if (opcode==invokeOpcode) {
                     Type t = Type.getType(desc);
                     boolean expectedReference = isReferenceType(t);
@@ -182,7 +187,7 @@ public @interface AdaptField {
             }
 
             @Override
-            boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
+            boolean adapt(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
                 if (opcode== fieldOpcode) {
                     Type t = Type.getType(desc);
                     boolean expectedReference = isReferenceType(t);

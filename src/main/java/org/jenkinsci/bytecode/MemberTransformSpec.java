@@ -1,5 +1,7 @@
 package org.jenkinsci.bytecode;
 
+import org.kohsuke.asm3.Label;
+import org.kohsuke.asm3.MethodVisitor;
 import org.kohsuke.asm3.Type;
 
 import java.util.HashMap;
@@ -7,10 +9,14 @@ import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import static org.kohsuke.asm3.Opcodes.*;
+
 /**
- * All the rewrites of {@linkplain #kind a specific member type} keyed by their name and descriptor.
+ * All the adapters of {@linkplain #kind a specific member type} keyed by their name and descriptor.
  *
- * Different rewrite
+ * Adapters that share the same name and the descriptor will be aggregated to a set.
+ * This is because at the time of rewrite we cannot statically determine which adapter
+ * should be actually effective.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -31,24 +37,67 @@ final class MemberTransformSpec extends HashMap<NameAndType,Set<MemberAdapter>> 
         }
     }
 
-    void addRewriteSpec(String name, Class[] types, MemberAdapter c) {
-        OUTER:
-        for (Class type : types) {
-            NameAndType key = new NameAndType(Type.getDescriptor(type),name);
+    void addRewriteSpec(String name, Class type, MemberAdapter c) {
+        NameAndType key = new NameAndType(Type.getDescriptor(type),name);
 
-            Set<MemberAdapter> specs = get(key);
-            if (specs==null)  put(key, specs = new HashSet<MemberAdapter>());
+        Set<MemberAdapter> specs = get(key);
+        if (specs==null)  put(key, specs = new HashSet<MemberAdapter>());
 
-            for (MemberAdapter existing : specs) {
-                if (existing.owner.equals(c.owner)) {
-                    // this transformer rewrites different access to the same member
-                    specs.remove(existing);
-                    specs.add(c.compose(existing));
-                    continue OUTER;
+        for (MemberAdapter existing : specs) {
+            if (existing.owner.equals(c.owner)) {
+                // this adapter rewrites a different access to the same member
+                specs.remove(existing);
+                specs.add(c.compose(existing));
+                return;
+            }
+        }
+
+        specs.add(c);
+    }
+
+    public boolean rewrite(int opcode, String owner, String name, String desc, MethodVisitor base) {
+        Set<MemberAdapter> adapters = get(new NameAndType(desc, name));
+
+        boolean modified = false;
+        if (adapters !=null) {
+            Label end = new Label();
+            Label next = new Label();
+            for (MemberAdapter fr : adapters) {
+                base.visitLabel(next);
+                next = new Label();
+                base.visitLdcInsn(fr.owner);
+                base.visitLdcInsn(Type.getObjectType(owner));
+                base.visitMethodInsn(INVOKEVIRTUAL,"java/lang/Class","isAssignableFrom","(Ljava/lang/Class;)Z");
+                base.visitJumpInsn(IFEQ,next);
+
+                // if assignable
+                if (fr.adapt(opcode,owner,name,desc,base)) {
+                    modified = true;
+                } else {
+                    // failed to rewrite
+                    kind.visit(base, opcode, owner, name, desc);
                 }
+
+                base.visitJumpInsn(GOTO,end);
             }
 
-            specs.add(c);
+            base.visitLabel(next);      // if this field turns out to be unrelated
+            kind.visit(base, opcode, owner, name, desc);
+
+            base.visitLabel(end);   // all branches join here
+        } else {
+            kind.visit(base, opcode, owner, name, desc);
         }
+
+        return modified;
+    }
+
+    /**
+     * Inserts a debug println into the byte code.
+     */
+    private void println(MethodVisitor base, String msg) {
+        base.visitFieldInsn(GETSTATIC, "java/lang/System","out","Ljava/io/PrintStream;");
+        base.visitLdcInsn(msg);
+        base.visitMethodInsn(INVOKEVIRTUAL, "java/io/PrintStream","println","(Ljava/lang/String;)V");
     }
 }

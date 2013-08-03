@@ -16,11 +16,6 @@ enum Kind {
         void visit(MethodVisitor visitor, int opcode, String owner, String name, String desc) {
             visitor.visitFieldInsn(opcode, owner, name, desc);
         }
-
-        @Override
-        boolean visit(MemberAdapter mrs, int opcode, String owner, String name, String desc, MethodVisitor delegate) {
-            return mrs.visitFieldInsn(opcode,owner,name,desc,delegate);
-        }
     },
 
     METHOD {
@@ -28,14 +23,7 @@ enum Kind {
         void visit(MethodVisitor visitor, int opcode, String owner, String name, String desc) {
             visitor.visitMethodInsn(opcode,owner,name,desc);
         }
-
-        @Override
-        boolean visit(MemberAdapter mrs, int opcode, String owner, String name, String desc, MethodVisitor delegate) {
-            return mrs.visitMethodInsn(opcode,owner,name,desc,delegate);
-        }
     };
 
     abstract void visit(MethodVisitor visitor, int opcode, String owner, String name, String desc);
-
-    abstract boolean visit(MemberAdapter mrs, int opcode, String owner, String name, String desc, MethodVisitor delegate);
 }
