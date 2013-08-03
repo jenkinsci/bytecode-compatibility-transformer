@@ -1,4 +1,8 @@
 import junit.framework.*;
+
+import java.lang.Integer;
+import java.lang.String;
+import java.lang.System;
 import java.util.*;
 
 /**
@@ -46,5 +50,16 @@ public class Main extends TestCase {
         assertFalse(Foo.Inner.j[1]);
         Foo.Inner.j = new boolean[0];
         assertEquals(0,Foo.Inner.j.length);
+    }
+
+    public void testSubType() {
+        class SubType extends Foo.Inner {
+            void runTest() {
+                i = 5;
+                i += 3;
+                assertEquals(i,8);
+            }
+        }
+        new SubType().runTest();
     }
 }

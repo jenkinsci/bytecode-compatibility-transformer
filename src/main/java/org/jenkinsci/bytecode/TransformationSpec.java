@@ -11,8 +11,10 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -24,9 +26,11 @@ import static org.jenkinsci.constant_pool_scanner.ConstantType.*;
  */
 class TransformationSpec {
     /**
-     * From internal name of the type to the data structure.
+     * From internal name of class/interface to its details of rewrite.
      */
     final Map<String,ClassRewriteSpec> rewrites = new HashMap<String,ClassRewriteSpec>();
+
+    Map<String,Set<ClassRewriteSpec>> fields = new HashMap<String,Set<ClassRewriteSpec>>(); // maybe we need to add type here too to narrow the search
 
     TransformationSpec() {
     }
@@ -68,8 +72,7 @@ class TransformationSpec {
         try {
             ConstantPool p = ConstantPoolScanner.parse(image, FIELD_REF, METHOD_REF);
             for (FieldRefConstant r : p.list(FieldRefConstant.class)) {
-                ClassRewriteSpec s = rewrites.get(r.getClazz());
-                if (s!=null && s.fields.get(r.getName())!=null)
+                if (fields.containsKey(r.getName()))
                     return true;
             }
             for (MethodRefConstant r : p.list(MethodRefConstant.class)) {
@@ -94,14 +97,21 @@ class TransformationSpec {
 
     void addFieldRewriteSpec(Class owner, String name, MemberRewriteSpec spec) {
         ClassRewriteSpec c = createClassRewrite(owner);
-        c.fields.put(name,spec.compose(c.fields.get(name)));
+        spec = spec.compose(c.fields.get(name));
+        spec.owner = c;
+        c.fields.put(name, spec);
+
+        Set<ClassRewriteSpec> classes = fields.get(name);
+        if (classes==null)  fields.put(name,classes=new HashSet<ClassRewriteSpec>());
+        classes.add(c);
     }
 
     void addMethodRewriteSpec(Class owner, String name, MemberRewriteSpec spec) {
         ClassRewriteSpec c = createClassRewrite(owner);
-        c.methods.put(name,spec.compose(c.methods.get(name)));
+        spec = spec.compose(c.methods.get(name));
+        spec.owner = c;
+        c.methods.put(name, spec);
     }
-
 
     private static final Logger LOGGER = Logger.getLogger(TransformationSpec.class.getName());
 }

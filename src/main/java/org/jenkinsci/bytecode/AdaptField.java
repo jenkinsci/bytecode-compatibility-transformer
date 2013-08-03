@@ -99,7 +99,11 @@ public @interface AdaptField {
             final String methodName = m.getName();
             final String methodDescriptor = Type.getMethodDescriptor(m);
 
-            boolean isGetter = m.getParameterTypes().length==0;
+            Class<?>[] params = m.getParameterTypes();
+            boolean isGetter = params.length==0;
+
+            // in this VM, what's the actual type of the value? is it primitive (as opposed to reference?)
+            final boolean actuallyPrimitive = isGetter ? m.getReturnType().isPrimitive() : params[0].isPrimitive();
 
             if (Modifier.isStatic(m.getModifiers())) {
                 if (isGetter) {
@@ -108,13 +112,17 @@ public @interface AdaptField {
                         boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
                             switch (opcode) {
                             case GETSTATIC:
-                                // rewrite "X.y" to "(T)X.z()".
-                                // we'll leave it up to HotSpot to optimize away casts
-                                delegate.visitMethodInsn(INVOKESTATIC, owner, methodName, methodDescriptor);
                                 Type t = Type.getType(desc);
-                                if (isReferenceType(t))
-                                    delegate.visitTypeInsn(CHECKCAST, t.getInternalName());
-                                return true;
+                                boolean expectedReference = isReferenceType(t);
+
+                                if (actuallyPrimitive^expectedReference) {
+                                    // rewrite "X.y" to "(T)X.z()".
+                                    // we'll leave it up to HotSpot to optimize away casts
+                                    delegate.visitMethodInsn(INVOKESTATIC, owner, methodName, methodDescriptor);
+                                    if (expectedReference)
+                                        delegate.visitTypeInsn(CHECKCAST, t.getInternalName());
+                                    return true;
+                                }
                             }
                             return false;
                         }
@@ -125,10 +133,15 @@ public @interface AdaptField {
                         boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
                             switch (opcode) {
                             case PUTSTATIC:
-                                // rewrite "X.y=v" to "X.z(v)"
-                                // we expect the argument type to match
-                                delegate.visitMethodInsn(INVOKESTATIC, owner, methodName, methodDescriptor);
-                                return true;
+                                Type t = Type.getType(desc);
+                                boolean expectedReference = isReferenceType(t);
+
+                                if (actuallyPrimitive^expectedReference) {
+                                    // rewrite "X.y=v" to "X.z(v)"
+                                    // we expect the argument type to match
+                                    delegate.visitMethodInsn(INVOKESTATIC, owner, methodName, methodDescriptor);
+                                    return true;
+                                }
                             }
                             return false;
                         }
@@ -141,13 +154,17 @@ public @interface AdaptField {
                         boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
                             switch (opcode) {
                             case GETFIELD:
-                                // rewrite "x.y" to "(T)x.z()".
-                                // we'll leave it up to HotSpot to optimize away casts
-                                delegate.visitMethodInsn(INVOKEVIRTUAL,owner,methodName,methodDescriptor);
                                 Type t = Type.getType(desc);
-                                if (isReferenceType(t))
-                                    delegate.visitTypeInsn(CHECKCAST, t.getInternalName());
-                                return true;
+                                boolean expectedReference = isReferenceType(t);
+
+                                if (actuallyPrimitive^expectedReference) {
+                                    // rewrite "x.y" to "(T)x.z()".
+                                    // we'll leave it up to HotSpot to optimize away casts
+                                    delegate.visitMethodInsn(INVOKEVIRTUAL,owner,methodName,methodDescriptor);
+                                    if (expectedReference)
+                                        delegate.visitTypeInsn(CHECKCAST, t.getInternalName());
+                                    return true;
+                                }
                             }
                             return false;
                         }
@@ -158,10 +175,15 @@ public @interface AdaptField {
                         boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
                             switch (opcode) {
                             case PUTFIELD:
-                                // rewrite "x.y=v" to "x.z(v)"
-                                // we expect the argument type to match
-                                delegate.visitMethodInsn(INVOKEVIRTUAL, owner, methodName, methodDescriptor);
-                                return true;
+                                Type t = Type.getType(desc);
+                                boolean expectedReference = isReferenceType(t);
+
+                                if (actuallyPrimitive^expectedReference) {
+                                    // rewrite "x.y=v" to "x.z(v)"
+                                    // we expect the argument type to match
+                                    delegate.visitMethodInsn(INVOKEVIRTUAL, owner, methodName, methodDescriptor);
+                                    return true;
+                                }
                             }
                             return false;
                         }

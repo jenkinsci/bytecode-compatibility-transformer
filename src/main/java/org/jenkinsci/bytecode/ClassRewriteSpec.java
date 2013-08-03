@@ -1,5 +1,7 @@
 package org.jenkinsci.bytecode;
 
+import org.kohsuke.asm3.Type;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,6 +10,7 @@ import java.util.Map;
  */
 class ClassRewriteSpec {
     final String internalName;
+    final Type type;
 
     /**
      * Fields to rewrite. From the name of the field to its correct descriptor.
@@ -21,6 +24,7 @@ class ClassRewriteSpec {
 
     ClassRewriteSpec(String internalName) {
         this.internalName = internalName;
+        this.type = Type.getObjectType(internalName);
     }
 
     /**
@@ -28,6 +32,7 @@ class ClassRewriteSpec {
      */
     ClassRewriteSpec(ClassRewriteSpec that) {
         this.internalName = that.internalName;
+        this.type = that.type;
         this.fields.putAll(that.fields);
         this.methods.putAll(that.methods);
     }

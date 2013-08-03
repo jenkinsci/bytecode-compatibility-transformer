@@ -11,5 +11,7 @@ class Foo {
         int i;
 
         static boolean[] j = {true,false};
+
+        String version = "v1";
     }
 }

@@ -8,6 +8,8 @@ import org.kohsuke.asm3.MethodVisitor;
  * @author Kohsuke Kawaguchi
  */
 abstract class MemberRewriteSpec {
+    ClassRewriteSpec owner;
+
     boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
         return false;
     }

@@ -34,5 +34,7 @@ class Foo {
         static void setJ(boolean[] v) {
             _j=v;
         }
+
+        String version = "v2";
     }
 }
