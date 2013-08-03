@@ -10,21 +10,21 @@ import java.lang.reflect.Member;
  *
  * @author Kohsuke Kawaguchi
  */
-abstract class MemberRewriteSpec {
+abstract class MemberAdapter {
     /**
      * Type that declared the member that is being rewritten.
      */
     final Type owner;
 
-    protected MemberRewriteSpec(Type owner) {
+    protected MemberAdapter(Type owner) {
         this.owner = owner;
     }
 
-    protected MemberRewriteSpec(Class owner) {
+    protected MemberAdapter(Class owner) {
         this.owner = Type.getType(owner);
     }
 
-    protected MemberRewriteSpec(Member member) {
+    protected MemberAdapter(Member member) {
         this(member.getDeclaringClass());
     }
 
@@ -37,20 +37,20 @@ abstract class MemberRewriteSpec {
     }
 
     /**
-     * Merges multiple {@link MemberRewriteSpec}s that rewrite
+     * Merges multiple {@link MemberAdapter}s that rewrite
      * different accesses to the same member.
      *
      * Used to merge setter rewrite spec to getter rewrite spec.
      *
      * TODO: improve error handling.
      */
-    MemberRewriteSpec compose(final MemberRewriteSpec rhs) {
+    MemberAdapter compose(final MemberAdapter rhs) {
         if (rhs==null)  return this;
 
         assert this.owner.equals(rhs.owner);
 
-        final MemberRewriteSpec lhs = this;
-        return new MemberRewriteSpec(owner) {
+        final MemberAdapter lhs = this;
+        return new MemberAdapter(owner) {
             @Override
             boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
                 return lhs.visitFieldInsn(opcode, owner, name, desc, delegate)

@@ -3,7 +3,7 @@ package org.jenkinsci.bytecode;
 import java.lang.reflect.AnnotatedElement;
 
 /**
- * Creates {@link MemberRewriteSpec} and adds them to {@link TransformationSpec}
+ * Creates {@link MemberAdapter} and adds them to {@link TransformationSpec}
  * based on the annotation that has {@link AdapterAnnotation} on.
  *
  * @author Kohsuke Kawaguchi

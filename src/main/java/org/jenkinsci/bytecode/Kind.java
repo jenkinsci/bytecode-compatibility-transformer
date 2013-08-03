@@ -18,7 +18,7 @@ enum Kind {
         }
 
         @Override
-        boolean visit(MemberRewriteSpec mrs, int opcode, String owner, String name, String desc, MethodVisitor delegate) {
+        boolean visit(MemberAdapter mrs, int opcode, String owner, String name, String desc, MethodVisitor delegate) {
             return mrs.visitFieldInsn(opcode,owner,name,desc,delegate);
         }
     },
@@ -30,12 +30,12 @@ enum Kind {
         }
 
         @Override
-        boolean visit(MemberRewriteSpec mrs, int opcode, String owner, String name, String desc, MethodVisitor delegate) {
+        boolean visit(MemberAdapter mrs, int opcode, String owner, String name, String desc, MethodVisitor delegate) {
             return mrs.visitMethodInsn(opcode,owner,name,desc,delegate);
         }
     };
 
     abstract void visit(MethodVisitor visitor, int opcode, String owner, String name, String desc);
 
-    abstract boolean visit(MemberRewriteSpec mrs, int opcode, String owner, String name, String desc, MethodVisitor delegate);
+    abstract boolean visit(MemberAdapter mrs, int opcode, String owner, String name, String desc, MethodVisitor delegate);
 }

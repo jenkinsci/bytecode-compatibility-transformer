@@ -61,7 +61,7 @@ public @interface AdaptField {
             String name = af.name();
             if (name.length()==0)   name = mem.getName(); // default to the same name
 
-            MemberRewriteSpec mrs = null;
+            MemberAdapter mrs = null;
             if (e instanceof Field)
                 mrs = fieldToField((Field) e);
             if (e instanceof Method)
@@ -73,13 +73,13 @@ public @interface AdaptField {
         /**
          * Rewrites a field reference to another field access.
          */
-        MemberRewriteSpec fieldToField(Field f) {
+        MemberAdapter fieldToField(Field f) {
             final String newName = f.getName();
             final Type newType = Type.getType(f.getType());
             final String newTypeDescriptor = newType.getDescriptor();
             final String newTypeInternalName = isReferenceType(newType) ? newType.getInternalName() : null;
 
-            return new MemberRewriteSpec(f) {
+            return new MemberAdapter(f) {
                 @Override
                 boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
                     switch (opcode) {
@@ -105,105 +105,97 @@ public @interface AdaptField {
             };
         }
 
-        MemberRewriteSpec fieldToMethod(Method m) {
-            final String methodName = m.getName();
-            final String methodDescriptor = Type.getMethodDescriptor(m);
-
+        MemberAdapter fieldToMethod(Method m) {
             Class<?>[] params = m.getParameterTypes();
             boolean isGetter = params.length==0;
 
-            // in this VM, what's the actual type of the value? is it primitive (as opposed to reference?)
-            final boolean actuallyPrimitive = isGetter ? m.getReturnType().isPrimitive() : params[0].isPrimitive();
-
             if (Modifier.isStatic(m.getModifiers())) {
                 if (isGetter) {
-                    return new MemberRewriteSpec(m) {
-                        @Override
-                        boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
-                            switch (opcode) {
-                            case GETSTATIC:
-                                Type t = Type.getType(desc);
-                                boolean expectedReference = isReferenceType(t);
-
-                                if (actuallyPrimitive^expectedReference) {
-                                    // rewrite "X.y" to "(T)X.z()".
-                                    // we'll leave it up to HotSpot to optimize away casts
-                                    delegate.visitMethodInsn(INVOKESTATIC, owner, methodName, methodDescriptor);
-                                    if (expectedReference)
-                                        delegate.visitTypeInsn(CHECKCAST, t.getInternalName());
-                                    return true;
-                                }
-                            }
-                            return false;
-                        }
-                    };
+                    return new GetFieldAdapter(m, GETSTATIC, INVOKESTATIC);
                 } else {
-                    return new MemberRewriteSpec(m) {
-                        @Override
-                        boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
-                            switch (opcode) {
-                            case PUTSTATIC:
-                                Type t = Type.getType(desc);
-                                boolean expectedReference = isReferenceType(t);
-
-                                if (actuallyPrimitive^expectedReference) {
-                                    // rewrite "X.y=v" to "X.z(v)"
-                                    // we expect the argument type to match
-                                    delegate.visitMethodInsn(INVOKESTATIC, owner, methodName, methodDescriptor);
-                                    return true;
-                                }
-                            }
-                            return false;
-                        }
-                    };
+                    return new SetFieldAdapter(m, PUTSTATIC, INVOKESTATIC);
                 }
             } else {// instance method
                 if (isGetter) {
-                    return new MemberRewriteSpec(m) {
-                        @Override
-                        boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
-                            switch (opcode) {
-                            case GETFIELD:
-                                Type t = Type.getType(desc);
-                                boolean expectedReference = isReferenceType(t);
-
-                                if (actuallyPrimitive^expectedReference) {
-                                    // rewrite "x.y" to "(T)x.z()".
-                                    // we'll leave it up to HotSpot to optimize away casts
-                                    delegate.visitMethodInsn(INVOKEVIRTUAL,owner,methodName,methodDescriptor);
-                                    if (expectedReference)
-                                        delegate.visitTypeInsn(CHECKCAST, t.getInternalName());
-                                    return true;
-                                }
-                            }
-                            return false;
-                        }
-                    };
+                    return new GetFieldAdapter(m, GETFIELD, INVOKEVIRTUAL);
                 } else {
-                    return new MemberRewriteSpec(m) {
-                        @Override
-                        boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
-                            switch (opcode) {
-                            case PUTFIELD:
-                                Type t = Type.getType(desc);
-                                boolean expectedReference = isReferenceType(t);
-
-                                if (actuallyPrimitive^expectedReference) {
-                                    // rewrite "x.y=v" to "x.z(v)"
-                                    // we expect the argument type to match
-                                    delegate.visitMethodInsn(INVOKEVIRTUAL, owner, methodName, methodDescriptor);
-                                    return true;
-                                }
-                            }
-                            return false;
-                        }
-                    };
+                    return new SetFieldAdapter(m, PUTFIELD, INVOKEVIRTUAL);
                 }
             }
         }
 
         private static boolean isReferenceType(Type t) {
             return t.getSort()== ARRAY || t.getSort()== OBJECT;
+        }
+
+        private static class FieldToMethodAdapter extends MemberAdapter {
+            final boolean actuallyPrimitive;
+            final String methodName;
+            final String methodDescriptor;
+            final int fieldOpcode;
+            final int invokeOpcode;
+
+            public FieldToMethodAdapter(Method m, int fieldOpcode, int invokeOpcode) {
+                super(m);
+
+                methodName = m.getName();
+                methodDescriptor = Type.getMethodDescriptor(m);
+
+                Class<?>[] params = m.getParameterTypes();
+                boolean isGetter = params.length==0;
+
+                // in this VM, what's the actual type of the value? is it primitive (as opposed to reference?)
+                actuallyPrimitive = isGetter ? m.getReturnType().isPrimitive() : params[0].isPrimitive();
+
+                this.fieldOpcode = fieldOpcode;
+                this.invokeOpcode = invokeOpcode;
+            }
+        }
+
+        private static class GetFieldAdapter extends FieldToMethodAdapter {
+            private GetFieldAdapter(Method m, int fieldOpcode, int invokeOpcode) {
+                super(m, fieldOpcode, invokeOpcode);
+            }
+
+            @Override
+            boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
+                if (opcode==invokeOpcode) {
+                    Type t = Type.getType(desc);
+                    boolean expectedReference = isReferenceType(t);
+
+                    if (actuallyPrimitive^expectedReference) {
+                        // rewrite "x.y" to "(T)x.z()".
+                        // we'll leave it up to HotSpot to optimize away casts
+                        delegate.visitMethodInsn(invokeOpcode,owner,methodName,methodDescriptor);
+                        if (expectedReference)
+                            delegate.visitTypeInsn(CHECKCAST, t.getInternalName());
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+
+        private static class SetFieldAdapter extends FieldToMethodAdapter {
+            private SetFieldAdapter(Method m, int fieldOpcode, int invokeOpcode) {
+                super(m, fieldOpcode, invokeOpcode);
+            }
+
+            @Override
+            boolean visitFieldInsn(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
+                if (opcode== fieldOpcode) {
+                    Type t = Type.getType(desc);
+                    boolean expectedReference = isReferenceType(t);
+
+                    if (actuallyPrimitive ^expectedReference) {
+                        // rewrite "x.y=v" to "x.z(v)"
+                        // we expect the argument type to match
+                        delegate.visitMethodInsn(invokeOpcode, owner, methodName, methodDescriptor);
+                        return true;
+                    }
+                }
+                return false;
+            }
         }
     }
 }

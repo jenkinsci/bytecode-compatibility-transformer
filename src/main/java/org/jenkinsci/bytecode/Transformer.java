@@ -82,11 +82,11 @@ public class Transformer {
                         rewrite(opcode,owner,name,desc, Kind.FIELD, spec.fields.get(new NameAndType(desc, name)));
                     }
 
-                    public void rewrite(int opcode, String owner, String name, String desc, Kind s, Set<MemberRewriteSpec> specs) {
+                    public void rewrite(int opcode, String owner, String name, String desc, Kind s, Set<MemberAdapter> specs) {
                         if (specs !=null) {
                             Label end = new Label();
                             Label next = new Label();
-                            for (MemberRewriteSpec fr : specs) {
+                            for (MemberAdapter fr : specs) {
                                 base.visitLabel(next);
                                 next = new Label();
                                 base.visitLdcInsn(fr.owner);
