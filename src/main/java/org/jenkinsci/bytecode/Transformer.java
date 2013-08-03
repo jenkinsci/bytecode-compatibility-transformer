@@ -74,15 +74,15 @@ public class Transformer {
                 return new MethodAdapter(base) {
                     @Override
                     public void visitMethodInsn(int opcode, String owner, String name, String desc) {
-                        rewrite(opcode,owner,name,desc,Selector.METHOD, spec.methods.get(new NameAndType(desc, name)));
+                        rewrite(opcode,owner,name,desc, Kind.METHOD, spec.methods.get(new NameAndType(desc, name)));
                     }
 
                     @Override
                     public void visitFieldInsn(int opcode, String owner, String name, String desc) {
-                        rewrite(opcode,owner,name,desc,Selector.FIELD, spec.fields.get(new NameAndType(desc, name)));
+                        rewrite(opcode,owner,name,desc, Kind.FIELD, spec.fields.get(new NameAndType(desc, name)));
                     }
 
-                    public void rewrite(int opcode, String owner, String name, String desc, Selector s, Set<MemberRewriteSpec> specs) {
+                    public void rewrite(int opcode, String owner, String name, String desc, Kind s, Set<MemberRewriteSpec> specs) {
                         if (specs !=null) {
                             Label end = new Label();
                             Label next = new Label();

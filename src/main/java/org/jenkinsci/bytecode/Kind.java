@@ -10,7 +10,7 @@ import org.kohsuke.asm3.MethodVisitor;
  *
  * @author Kohsuke Kawaguchi
  */
-enum Selector {
+enum Kind {
     FIELD {
         @Override
         void visit(MethodVisitor visitor, int opcode, String owner, String name, String desc) {

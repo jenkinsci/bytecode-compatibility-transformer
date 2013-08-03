@@ -5,15 +5,10 @@ import org.jenkinsci.constant_pool_scanner.ConstantPoolScanner;
 import org.jenkinsci.constant_pool_scanner.FieldRefConstant;
 import org.jenkinsci.constant_pool_scanner.MethodRefConstant;
 import org.jvnet.hudson.annotation_indexer.Index;
-import org.kohsuke.asm3.Type;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,51 +26,24 @@ class TransformationSpec {
      * when a subtype refers to a field in a super type, javac generates field reference
      * with the owner type set to the sub type, and let JVM resolve it to the correct super type.
      */
-    final RewriteMap fields = new RewriteMap(); // maybe we need to add type here too to narrow the search
+    final MemberTransformSpec fields;
 
     /**
      * Methods by their name and type (but without the owner class.)
      */
-    final RewriteMap methods = new RewriteMap(); // maybe we need to add type here too to narrow the search
-
-    class RewriteMap extends HashMap<NameAndType,Set<MemberRewriteSpec>> {
-        void copyFrom(RewriteMap rhs) {
-            for (Entry<NameAndType,Set<MemberRewriteSpec>> e : rhs.entrySet()) {
-                put(e.getKey(),new HashSet<MemberRewriteSpec>(e.getValue()));
-            }
-        }
-
-        void addRewriteSpec(String name, Class[] types, MemberRewriteSpec c) {
-            OUTER:
-            for (Class type : types) {
-                NameAndType key = new NameAndType(Type.getDescriptor(type),name);
-
-                Set<MemberRewriteSpec> specs = get(key);
-                if (specs==null)  put(key, specs = new HashSet<MemberRewriteSpec>());
-
-                for (MemberRewriteSpec existing : specs) {
-                    if (existing.owner.equals(c.owner)) {
-                        // this transformer rewrites different access to the same member
-                        specs.remove(existing);
-                        specs.add(c.compose(existing));
-                        continue OUTER;
-                    }
-                }
-
-                specs.add(c);
-            }
-        }
-    }
+    final MemberTransformSpec methods;
 
     TransformationSpec() {
+        this.fields = new MemberTransformSpec(Kind.FIELD);
+        this.methods = new MemberTransformSpec(Kind.METHOD);
     }
 
     /**
      * Copy constructor.
      */
     TransformationSpec(TransformationSpec that) {
-        this.fields.copyFrom(that.fields);
-        this.methods.copyFrom(that.methods);
+        this.fields = new MemberTransformSpec(that.fields);
+        this.methods = new MemberTransformSpec(that.methods);
     }
 
     void loadRule(ClassLoader cl) throws IOException {

@@ -6,7 +6,7 @@ import org.kohsuke.asm3.Type;
 import java.lang.reflect.Member;
 
 /**
- * Rewrites field access.
+ * Adapts a single field/method.
  *
  * @author Kohsuke Kawaguchi
  */
