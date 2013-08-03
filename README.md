@@ -34,7 +34,7 @@ When you refactor the code, you put an annotation to the newly introduced method
 that a field reference to `INSTANCE` should resolve to a method call `getInstance()`:
 
     class Foo {
-        @AdaptField("INSTANCE")
+        @AdaptField(name="INSTANCE",was=Foo.class)
         public static Foo getInstance() {
             return new Foo();
         }
@@ -69,7 +69,7 @@ The Maven coordinates is as follows:
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>bytecode-compatibility-transformer</artifactId>
-      <version>1.1</version>
+      <version>1.3</version>
     </dependency>
 
     <repositories>
@@ -97,12 +97,12 @@ If you want to support both read/write, then you need to create a getter/setter 
 both methods:
 
     class Foo {
-        @AdaptField("INSTANCE")
+        @AdaptField(name="INSTANCE",was=Foo.class)
         public static Foo getInstance() {
             return new Foo();
         }
 
-        @AdaptField("INSTANCE")
+        @AdaptField(name="INSTANCE",was=Foo.class)
         public static void setInstance(Foo foo) {
             ...
         }
@@ -120,7 +120,7 @@ This is convenient when you change the field type to a subtype of what it used t
 
     // v2
     class abstract Foo {
-        @AdaptField
+        @AdaptField(was=Foo.class)
         public static final FooImpl INSTANCE = ...;
     }
 

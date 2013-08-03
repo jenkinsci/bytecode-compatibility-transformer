@@ -1,36 +1,38 @@
 import org.jenkinsci.bytecode.AdaptField;
+
+import java.lang.String;
 import java.util.*;
 
 class Foo {
     static class Inner {
-        @AdaptField
+        @AdaptField(was=List.class)
         ArrayList x = new ArrayList();
-        @AdaptField
+        @AdaptField(was=Object[].class)
         String[] y;
-        @AdaptField
+        @AdaptField(was=Inner.class)
         Object z;
 
-        @AdaptField
+        @AdaptField(was=String.class)
         static final Object s = "hello";
 
         // field i is gone!
         int _i;
-        @AdaptField
+        @AdaptField(was=int.class)
         int i() {
             return _i;
         }
-        @AdaptField
+        @AdaptField(was=int.class)
         void i(int v) {
             _i=v;
         }
 
         // field j is gone!
         static boolean[] _j = {true,false};
-        @AdaptField("j")
+        @AdaptField(name = "j", was=boolean[].class)
         static boolean[] getJ() {
             return _j;
         }
-        @AdaptField("j")
+        @AdaptField(name = "j", was=boolean[].class)
         static void setJ(boolean[] v) {
             _j=v;
         }

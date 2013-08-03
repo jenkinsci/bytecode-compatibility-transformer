@@ -94,7 +94,7 @@ public class Transformer {
 
                     @Override
                     public void visitFieldInsn(int opcode, String owner, String name, String desc) {
-                        Set<ClassRewriteSpec> candidates = spec.fields.get(name);
+                        Set<ClassRewriteSpec> candidates = spec.fields.get(new NameAndType(desc,name));
                         if (candidates!=null) {
                             Label end = new Label();
                             Label next = new Label();

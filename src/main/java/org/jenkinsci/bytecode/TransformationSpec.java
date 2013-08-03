@@ -30,7 +30,10 @@ class TransformationSpec {
      */
     final Map<String,ClassRewriteSpec> rewrites = new HashMap<String,ClassRewriteSpec>();
 
-    Map<String,Set<ClassRewriteSpec>> fields = new HashMap<String,Set<ClassRewriteSpec>>(); // maybe we need to add type here too to narrow the search
+    /**
+     * Name + descriptor that requires rewriting.
+     */
+    Map<NameAndType,Set<ClassRewriteSpec>> fields = new HashMap<NameAndType,Set<ClassRewriteSpec>>(); // maybe we need to add type here too to narrow the search
 
     TransformationSpec() {
     }
@@ -72,7 +75,7 @@ class TransformationSpec {
         try {
             ConstantPool p = ConstantPoolScanner.parse(image, FIELD_REF, METHOD_REF);
             for (FieldRefConstant r : p.list(FieldRefConstant.class)) {
-                if (fields.containsKey(r.getName()))
+                if (fields.containsKey(new NameAndType(r)))
                     return true;
             }
             for (MethodRefConstant r : p.list(MethodRefConstant.class)) {
@@ -95,15 +98,19 @@ class TransformationSpec {
         return r;
     }
 
-    void addFieldRewriteSpec(Class owner, String name, MemberRewriteSpec spec) {
+    void addFieldRewriteSpec(Class owner, String name, Class[] types, MemberRewriteSpec spec) {
         ClassRewriteSpec c = createClassRewrite(owner);
         spec = spec.compose(c.fields.get(name));
         spec.owner = c;
         c.fields.put(name, spec);
 
-        Set<ClassRewriteSpec> classes = fields.get(name);
-        if (classes==null)  fields.put(name,classes=new HashSet<ClassRewriteSpec>());
-        classes.add(c);
+        for (Class type : types) {
+            NameAndType key = new NameAndType(Type.getDescriptor(type),name);
+
+            Set<ClassRewriteSpec> classes = fields.get(key);
+            if (classes==null)  fields.put(key,classes=new HashSet<ClassRewriteSpec>());
+            classes.add(c);
+        }
     }
 
     void addMethodRewriteSpec(Class owner, String name, MemberRewriteSpec spec) {

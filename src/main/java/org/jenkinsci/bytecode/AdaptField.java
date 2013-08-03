@@ -43,7 +43,14 @@ public @interface AdaptField {
     /**
      * Name of the field that's being adapted.
      */
-    String value() default "";
+    String name() default "";
+
+    /**
+     * Types this field was once known as.
+     *
+     * Byte code that refers to this field with these types will be the subject of rewrite.
+     */
+    Class[] was();
 
     public static class FactoryImpl extends AdapterAnnotationParser {
         @Override
@@ -51,13 +58,16 @@ public @interface AdaptField {
             AdaptField af = e.getAnnotation(AdaptField.class);
             Member mem = (Member)e;
 
-            String name = af.value();
+            String name = af.name();
             if (name.length()==0)   name = mem.getName(); // default to the same name
 
+            MemberRewriteSpec mrs = null;
             if (e instanceof Field)
-                spec.addFieldRewriteSpec(mem.getDeclaringClass(), name, fieldToField((Field) e));
+                mrs = fieldToField((Field) e);
             if (e instanceof Method)
-                spec.addFieldRewriteSpec(mem.getDeclaringClass(), name, fieldToMethod((Method) e));
+                mrs = fieldToMethod((Method) e);
+            assert mrs!=null;
+            spec.addFieldRewriteSpec(mem.getDeclaringClass(), name, af.was(), mrs);
         }
 
         /**
