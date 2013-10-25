@@ -29,6 +29,8 @@ abstract class MemberAdapter {
     }
 
     /**
+     * Rewrites an instruction to perform type adoption if necessary.
+     *
      * @param opcode
      *      Instruction being considered for type adapting. This is either a field or method invocation
      *      instruction.
@@ -43,7 +45,7 @@ abstract class MemberAdapter {
      *      if the instruction was rewritten. Otherwise do nothing and return false to let
      *      the caller pass {@code opcode} unmodified.
      */
-    boolean adapt(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
+    boolean adapt(ClassRewritingContext context, int opcode, String owner, String name, String desc, MethodVisitor delegate) {
         return false;
     }
 
@@ -63,9 +65,9 @@ abstract class MemberAdapter {
         final MemberAdapter lhs = this;
         return new MemberAdapter(owner) {
             @Override
-            boolean adapt(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
-                return lhs.adapt(opcode, owner, name, desc, delegate)
-                    || rhs.adapt(opcode, owner, name, desc, delegate);
+            boolean adapt(ClassRewritingContext context, int opcode, String owner, String name, String desc, MethodVisitor delegate) {
+                return lhs.adapt(context, opcode, owner, name, desc, delegate)
+                    || rhs.adapt(context, opcode, owner, name, desc, delegate);
             }
         };
     }

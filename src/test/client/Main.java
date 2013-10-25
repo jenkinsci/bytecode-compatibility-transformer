@@ -40,6 +40,10 @@ public class Main extends TestCase {
         assertEquals("hello",i.s);
     }
 
+    public void testFooI2() {
+        i.i = 5;
+    }
+
     public void testFooI() {
         i.i = 5;
         i.i += 3;

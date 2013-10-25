@@ -84,7 +84,7 @@ public @interface AdaptField {
 
             return new MemberAdapter(f) {
                 @Override
-                boolean adapt(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
+                boolean adapt(ClassRewritingContext context, int opcode, String owner, String name, String desc, MethodVisitor delegate) {
                     switch (opcode) {
                     case GETFIELD:
                     case GETSTATIC:
@@ -163,7 +163,7 @@ public @interface AdaptField {
             }
 
             @Override
-            boolean adapt(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
+            boolean adapt(ClassRewritingContext context, int opcode, String owner, String name, String desc, MethodVisitor delegate) {
                 if (opcode==fieldOpcode) {
                     Type t = Type.getType(desc);
                     boolean expectedReference = isReferenceType(t);
@@ -187,7 +187,7 @@ public @interface AdaptField {
             }
 
             @Override
-            boolean adapt(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
+            boolean adapt(ClassRewritingContext context, int opcode, String owner, String name, String desc, MethodVisitor delegate) {
                 if (opcode==fieldOpcode) {
                     Type t = Type.getType(desc);
                     boolean expectedReference = isReferenceType(t);

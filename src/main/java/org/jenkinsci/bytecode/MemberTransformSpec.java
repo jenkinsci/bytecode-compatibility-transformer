@@ -55,7 +55,7 @@ final class MemberTransformSpec extends HashMap<NameAndType,Set<MemberAdapter>> 
         specs.add(c);
     }
 
-    public boolean rewrite(int opcode, String owner, String name, String desc, MethodVisitor base) {
+    public boolean rewrite(ClassRewritingContext context, int opcode, String owner, String name, String desc, MethodVisitor base) {
         Set<MemberAdapter> adapters = get(new NameAndType(desc, name));
 
         boolean modified = false;
@@ -65,13 +65,12 @@ final class MemberTransformSpec extends HashMap<NameAndType,Set<MemberAdapter>> 
             for (MemberAdapter fr : adapters) {
                 base.visitLabel(next);
                 next = new Label();
-                base.visitLdcInsn(fr.owner);
-                base.visitLdcInsn(Type.getObjectType(owner));
-                base.visitMethodInsn(INVOKEVIRTUAL,"java/lang/Class","isAssignableFrom","(Ljava/lang/Class;)Z");
+
+                context.callTypeCheckMethod(fr.owner, Type.getObjectType(owner), base);
                 base.visitJumpInsn(IFEQ,next);
 
                 // if assignable
-                if (fr.adapt(opcode,owner,name,desc,base)) {
+                if (fr.adapt(context,opcode,owner,name,desc,base)) {
                     modified = true;
                 } else {
                     // failed to rewrite

@@ -61,15 +61,18 @@ public class Transformer {
         if (!spec.mayNeedTransformation(image))
             return image;
 
-        ClassReader cr = new ClassReader(image);
-        ClassWriter cw = new ClassWriter(/*ClassWriter.COMPUTE_FRAMES|*/ClassWriter.COMPUTE_MAXS);
+        final ClassReader cr = new ClassReader(image);
+        final ClassWriter cw = new ClassWriter(/*ClassWriter.COMPUTE_FRAMES|*/ClassWriter.COMPUTE_MAXS);
 
         final boolean[] modified = new boolean[1];
 
         cr.accept(new ClassAdapter(cw) {
+            private ClassRewritingContext context;
+
             @Override
             public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
                 super.visit(Math.max(version,49), access, name, signature, superName, interfaces);
+                this.context = new ClassRewritingContext(name);
             }
 
             @Override
@@ -79,15 +82,22 @@ public class Transformer {
                 return new MethodAdapter(base) {
                     @Override
                     public void visitMethodInsn(int opcode, String owner, String name, String desc) {
-                        modified[0] |= spec.methods.rewrite(opcode,owner,name,desc,base);
+                        modified[0] |= spec.methods.rewrite(context,opcode,owner,name,desc,base);
                     }
 
                     @Override
                     public void visitFieldInsn(int opcode, String owner, String name, String desc) {
-                        modified[0] |= spec.fields.rewrite(opcode,owner,name,desc,base);
+                        modified[0] |= spec.fields.rewrite(context,opcode,owner,name,desc,base);
                     }
                 };
             }
+
+            @Override
+            public void visitEnd() {
+                context.generateCheckerMethods(cw);
+                super.visitEnd();
+            }
+
         },cr.SKIP_FRAMES);
 
         if (!modified[0])  return image;            // untouched
