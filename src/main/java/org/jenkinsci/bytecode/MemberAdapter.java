@@ -28,6 +28,21 @@ abstract class MemberAdapter {
         this(member.getDeclaringClass());
     }
 
+    /**
+     * @param opcode
+     *      Instruction being considered for type adapting. This is either a field or method invocation
+     *      instruction.
+     * @param owner
+     *      Owner type of the field/method  that {@code opcode} is referring to.
+     * @param desc
+     *      Method/field descriptor that {@code opcode} is calling/accessing.
+     * @param delegate
+     *      Generate bytecode by calling this visitor.
+     *
+     * @return true
+     *      if the instruction was rewritten. Otherwise do nothing and return false to let
+     *      the caller pass {@code opcode} unmodified.
+     */
     boolean adapt(int opcode, String owner, String name, String desc, MethodVisitor delegate) {
         return false;
     }
