@@ -39,11 +39,14 @@ public class CompatibilityTest {
     private AntClassLoader createClassLoader(String v) throws IOException {
         final Transformer t = new Transformer();
         AntClassLoader cl = new AntClassLoader() {
+            final File outputDir = new File("target/modified-classes");
             @Override
             protected Class<?> defineClassFromData(File container, byte[] classData, String classname) throws IOException {
                 byte[] rewritten = t.transform(classname, classData);
                 if (rewritten!=classData) {
-                    FileUtils.writeByteArrayToFile(new File(classname+".class"),rewritten);
+                    File dst = new File(outputDir,classname.replace('.','/')+".class");
+                    dst.getParentFile().mkdirs();
+                    FileUtils.writeByteArrayToFile(dst,rewritten);
                     System.out.println("Modified "+classname);
                 }
                 return super.defineClassFromData(container, rewritten, classname);
@@ -52,7 +55,7 @@ public class CompatibilityTest {
 
         cl.addPathComponent(new File("target/test-classes/"+ v));
         cl.addPathComponent(new File("target/test-classes/client"));
-        cl.addPathComponent(new File("target/ivy.jar"));
+        cl.addPathComponent(new File("target/lib/ivy.jar"));
 
         t.loadRules(cl);
 

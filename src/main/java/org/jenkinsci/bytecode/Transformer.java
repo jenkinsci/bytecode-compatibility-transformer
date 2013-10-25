@@ -68,6 +68,11 @@ public class Transformer {
 
         cr.accept(new ClassAdapter(cw) {
             @Override
+            public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+                super.visit(Math.max(version,49), access, name, signature, superName, interfaces);
+            }
+
+            @Override
             public MethodVisitor visitMethod(int access, final String methodName, final String methodDescriptor, String methodSignature, String[] exceptions) {
                 final MethodVisitor base = super.visitMethod(access, methodName, methodDescriptor, methodSignature, exceptions);
 

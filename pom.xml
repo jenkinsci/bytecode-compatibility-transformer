@@ -27,14 +27,23 @@
                 <mkdir dir="target/test-classes/v2" />
                 <mkdir dir="target/test-classes/client" />
 
+                <path id="lib">
+                  <fileset dir="target/lib" includes="*.jar" />
+                </path>
+
                 <!-- basic sanity. unmodified client and v1 should work as expected -->
-                <javac source="1.6" target="1.6" debug="true" srcdir="src/test/v1" destdir="target/test-classes/v1" />
+                <javac source="1.6" target="1.6" debug="true" srcdir="src/test/v1" destdir="target/test-classes/v1">
+                  <classpath>
+                    <path refid="lib" />
+                  </classpath>
+                </javac>
                 <javac source="1.6" target="1.6" debug="true" srcdir="src/test/client" destdir="target/test-classes/client">
                   <classpath>
                     <pathelement path="target/classes" />
                     <pathelement path="target/test-classes/v1" />
                     <path refid="maven.compile.classpath" />
                     <path refid="maven.test.classpath" />
+                    <path refid="lib" />
                   </classpath>
                 </javac>
 
@@ -43,6 +52,7 @@
                   <classpath>
                     <path refid="maven.compile.classpath" />
                     <pathelement path="target/classes" />
+                    <path refid="lib" />
                   </classpath>
                 </javac>
               </tasks>
@@ -76,7 +86,7 @@
                   <groupId>org.apache.ivy</groupId>
                   <artifactId>ivy</artifactId>
                   <version>2.3.0</version>
-                  <outputDirectory>target</outputDirectory>
+                  <outputDirectory>target/lib</outputDirectory>
                   <destFileName>ivy.jar</destFileName>
                 </artifactItem>
               </artifactItems>
