@@ -9,7 +9,7 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>bytecode-compatibility-transformer</artifactId>
   <name>Bytecode transformation-based library for managing backward compatibility</name>
-  <version>1.4</version>
+  <version>1.5-SNAPSHOT</version>
 
   <build>
     <plugins>
