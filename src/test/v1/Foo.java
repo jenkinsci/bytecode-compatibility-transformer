@@ -1,5 +1,7 @@
 import java.util.*;
 
+// this is the code against which the client is compiled
+// the test will then run that client with the v2 version.
 class Foo {
     static class Inner {
         List x = new ArrayList();

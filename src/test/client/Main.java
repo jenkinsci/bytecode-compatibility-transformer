@@ -4,6 +4,7 @@ import java.lang.Integer;
 import java.lang.String;
 import java.lang.System;
 import java.util.*;
+import org.apache.ivy.core.settings.*;
 
 /**
  * Code that refers to classes that change.
@@ -61,5 +62,11 @@ public class Main extends TestCase {
             }
         }
         new SubType().runTest();
+    }
+
+    public void testJenkins19383() {
+        Jenkins19383 j = new Jenkins19383();
+        assertNotNull(j.triggers);
+        new IvySettings(new IvyVariableContainerImpl());
     }
 }

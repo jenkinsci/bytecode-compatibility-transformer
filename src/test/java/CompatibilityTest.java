@@ -37,8 +37,6 @@ public class CompatibilityTest {
     }
 
     private AntClassLoader createClassLoader(String v) throws IOException {
-        File f1 = new File("target/test-classes/"+ v);
-        File f2 = new File("target/test-classes/client");
         final Transformer t = new Transformer();
         AntClassLoader cl = new AntClassLoader() {
             @Override
@@ -52,8 +50,9 @@ public class CompatibilityTest {
             }
         };
 
-        cl.addPathComponent(f1);
-        cl.addPathComponent(f2);
+        cl.addPathComponent(new File("target/test-classes/"+ v));
+        cl.addPathComponent(new File("target/test-classes/client"));
+        cl.addPathComponent(new File("target/ivy.jar"));
 
         t.loadRules(cl);
 
