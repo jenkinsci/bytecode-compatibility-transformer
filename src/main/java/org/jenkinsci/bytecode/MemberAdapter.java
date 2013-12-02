@@ -1,7 +1,7 @@
 package org.jenkinsci.bytecode;
 
-import org.kohsuke.asm3.MethodVisitor;
-import org.kohsuke.asm3.Type;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Type;
 
 import java.lang.reflect.Member;
 
