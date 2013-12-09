@@ -1,12 +1,12 @@
 package org.jenkinsci.bytecode;
 
-import org.kohsuke.asm3.ClassAdapter;
-import org.kohsuke.asm3.ClassReader;
-import org.kohsuke.asm3.ClassWriter;
-import org.kohsuke.asm3.Label;
-import org.kohsuke.asm3.MethodAdapter;
-import org.kohsuke.asm3.MethodVisitor;
-import org.kohsuke.asm3.Type;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -14,7 +14,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import static org.kohsuke.asm3.Opcodes.*;
+import static org.objectweb.asm.Opcodes.*;
 
 /**
  * Transform byte code where code references bytecode rewrite annotations.
@@ -66,7 +66,7 @@ public class Transformer {
 
         final boolean[] modified = new boolean[1];
 
-        cr.accept(new ClassAdapter(cw) {
+        cr.accept(new ClassVisitor(Opcodes.ASM4, cw) {
             private ClassRewritingContext context;
 
             @Override
@@ -79,7 +79,7 @@ public class Transformer {
             public MethodVisitor visitMethod(int access, final String methodName, final String methodDescriptor, String methodSignature, String[] exceptions) {
                 final MethodVisitor base = super.visitMethod(access, methodName, methodDescriptor, methodSignature, exceptions);
 
-                return new MethodAdapter(base) {
+                return new MethodVisitor(Opcodes.ASM4, base) {
                     @Override
                     public void visitMethodInsn(int opcode, String owner, String name, String desc) {
                         modified[0] |= spec.methods.rewrite(context,opcode,owner,name,desc,base);

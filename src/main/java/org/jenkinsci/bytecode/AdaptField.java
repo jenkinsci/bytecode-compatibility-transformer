@@ -1,9 +1,10 @@
 package org.jenkinsci.bytecode;
 
 import org.jvnet.hudson.annotation_indexer.Indexed;
-import org.kohsuke.asm3.MethodVisitor;
-import org.kohsuke.asm3.Type;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Type;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.lang.reflect.AnnotatedElement;
@@ -12,10 +13,9 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
-import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.*;
-import static org.kohsuke.asm3.Opcodes.*;
-import static org.kohsuke.asm3.Type.*;
+import static org.objectweb.asm.Opcodes.*;
+import static org.objectweb.asm.Type.*;
 
 /**
  * Rewrites a field reference by adapting the type of the field.
@@ -36,7 +36,7 @@ import static org.kohsuke.asm3.Type.*;
  * @author Kohsuke Kawaguchi
  */
 @Retention(RUNTIME)
-@Target({FIELD,METHOD})
+@Target({ElementType.FIELD,ElementType.METHOD})
 @Indexed
 @AdapterAnnotation(AdaptField.FactoryImpl.class)
 public @interface AdaptField {
