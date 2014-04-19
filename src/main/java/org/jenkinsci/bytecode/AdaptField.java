@@ -1,8 +1,8 @@
 package org.jenkinsci.bytecode;
 
 import org.jvnet.hudson.annotation_indexer.Indexed;
-import org.kohsuke.asm3.MethodVisitor;
-import org.kohsuke.asm3.Type;
+import org.kohsuke.asm5.MethodVisitor;
+import org.kohsuke.asm5.Type;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
@@ -14,8 +14,7 @@ import java.lang.reflect.Modifier;
 
 import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.*;
-import static org.kohsuke.asm3.Opcodes.*;
-import static org.kohsuke.asm3.Type.*;
+import static org.kohsuke.asm5.Opcodes.*;
 
 /**
  * Rewrites a field reference by adapting the type of the field.
@@ -53,6 +52,7 @@ public @interface AdaptField {
     Class[] was();
 
     public static class FactoryImpl extends AdapterAnnotationParser {
+        @SuppressWarnings("ChainOfInstanceofChecks")
         @Override
         void parse(TransformationSpec spec, AnnotatedElement e) {
             AdaptField af = e.getAnnotation(AdaptField.class);
@@ -84,7 +84,7 @@ public @interface AdaptField {
 
             return new MemberAdapter(f) {
                 @Override
-                boolean adapt(ClassRewritingContext context, int opcode, String owner, String name, String desc, MethodVisitor delegate) {
+                boolean adapt(ClassRewritingContext context, int opcode, String owner, String name, String desc, boolean intf, MethodVisitor delegate) {
                     switch (opcode) {
                     case GETFIELD:
                     case GETSTATIC:
@@ -128,7 +128,7 @@ public @interface AdaptField {
         }
 
         private static boolean isReferenceType(Type t) {
-            return t.getSort()== ARRAY || t.getSort()== OBJECT;
+            return t.getSort()== Type.ARRAY || t.getSort()== Type.OBJECT;
         }
 
         private static class FieldToMethodAdapter extends MemberAdapter {
@@ -163,7 +163,7 @@ public @interface AdaptField {
             }
 
             @Override
-            boolean adapt(ClassRewritingContext context, int opcode, String owner, String name, String desc, MethodVisitor delegate) {
+            boolean adapt(ClassRewritingContext context, int opcode, String owner, String name, String desc, boolean intf, MethodVisitor delegate) {
                 if (opcode==fieldOpcode) {
                     Type t = Type.getType(desc);
                     boolean expectedReference = isReferenceType(t);
@@ -171,7 +171,7 @@ public @interface AdaptField {
                     if (actuallyPrimitive^expectedReference) {
                         // rewrite "x.y" to "(T)x.z()".
                         // we'll leave it up to HotSpot to optimize away casts
-                        delegate.visitMethodInsn(invokeOpcode,owner,methodName,methodDescriptor);
+                        delegate.visitMethodInsn(invokeOpcode,owner,methodName,methodDescriptor,false);
                         if (expectedReference)
                             delegate.visitTypeInsn(CHECKCAST, t.getInternalName());
                         return true;
@@ -187,7 +187,7 @@ public @interface AdaptField {
             }
 
             @Override
-            boolean adapt(ClassRewritingContext context, int opcode, String owner, String name, String desc, MethodVisitor delegate) {
+            boolean adapt(ClassRewritingContext context, int opcode, String owner, String name, String desc, boolean intf, MethodVisitor delegate) {
                 if (opcode==fieldOpcode) {
                     Type t = Type.getType(desc);
                     boolean expectedReference = isReferenceType(t);
@@ -195,7 +195,7 @@ public @interface AdaptField {
                     if (actuallyPrimitive ^expectedReference) {
                         // rewrite "x.y=v" to "x.z(v)"
                         // we expect the argument type to match
-                        delegate.visitMethodInsn(invokeOpcode, owner, methodName, methodDescriptor);
+                        delegate.visitMethodInsn(invokeOpcode, owner, methodName, methodDescriptor, false);
                         return true;
                     }
                 }

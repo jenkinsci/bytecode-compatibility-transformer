@@ -1,20 +1,15 @@
 package org.jenkinsci.bytecode;
 
-import org.kohsuke.asm3.ClassAdapter;
-import org.kohsuke.asm3.ClassReader;
-import org.kohsuke.asm3.ClassWriter;
-import org.kohsuke.asm3.Label;
-import org.kohsuke.asm3.MethodAdapter;
-import org.kohsuke.asm3.MethodVisitor;
-import org.kohsuke.asm3.Type;
+import org.kohsuke.asm5.ClassReader;
+import org.kohsuke.asm5.ClassVisitor;
+import org.kohsuke.asm5.ClassWriter;
+import org.kohsuke.asm5.MethodVisitor;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Set;
-import java.util.logging.Logger;
 
-import static org.kohsuke.asm3.Opcodes.*;
+import static org.kohsuke.asm5.Opcodes.*;
 
 /**
  * Transform byte code where code references bytecode rewrite annotations.
@@ -66,7 +61,7 @@ public class Transformer {
 
         final boolean[] modified = new boolean[1];
 
-        cr.accept(new ClassAdapter(cw) {
+        cr.accept(new ClassVisitor(ASM5,cw) {
             private ClassRewritingContext context;
 
             @Override
@@ -79,15 +74,15 @@ public class Transformer {
             public MethodVisitor visitMethod(int access, final String methodName, final String methodDescriptor, String methodSignature, String[] exceptions) {
                 final MethodVisitor base = super.visitMethod(access, methodName, methodDescriptor, methodSignature, exceptions);
 
-                return new MethodAdapter(base) {
+                return new MethodVisitor(ASM5,base) {
                     @Override
-                    public void visitMethodInsn(int opcode, String owner, String name, String desc) {
-                        modified[0] |= spec.methods.rewrite(context,opcode,owner,name,desc,base);
+                    public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
+                        modified[0] |= spec.methods.rewrite(context,opcode,owner,name,desc, itf, base);
                     }
 
                     @Override
                     public void visitFieldInsn(int opcode, String owner, String name, String desc) {
-                        modified[0] |= spec.fields.rewrite(context,opcode,owner,name,desc,base);
+                        modified[0] |= spec.fields.rewrite(context,opcode,owner,name,desc, false, base);
                     }
                 };
             }

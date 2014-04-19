@@ -1,7 +1,7 @@
 package org.jenkinsci.bytecode;
 
-import org.kohsuke.asm3.MethodVisitor;
-import org.kohsuke.asm3.Type;
+import org.kohsuke.asm5.MethodVisitor;
+import org.kohsuke.asm5.Type;
 
 import java.lang.reflect.Member;
 
@@ -38,6 +38,8 @@ abstract class MemberAdapter {
      *      Owner type of the field/method  that {@code opcode} is referring to.
      * @param desc
      *      Method/field descriptor that {@code opcode} is calling/accessing.
+     * @param intf
+     *      Used for method calls only. if the method's owner class is an interface.
      * @param delegate
      *      Generate bytecode by calling this visitor.
      *
@@ -45,7 +47,7 @@ abstract class MemberAdapter {
      *      if the instruction was rewritten. Otherwise do nothing and return false to let
      *      the caller pass {@code opcode} unmodified.
      */
-    boolean adapt(ClassRewritingContext context, int opcode, String owner, String name, String desc, MethodVisitor delegate) {
+    boolean adapt(ClassRewritingContext context, int opcode, String owner, String name, String desc, boolean intf, MethodVisitor delegate) {
         return false;
     }
 
@@ -65,9 +67,9 @@ abstract class MemberAdapter {
         final MemberAdapter lhs = this;
         return new MemberAdapter(owner) {
             @Override
-            boolean adapt(ClassRewritingContext context, int opcode, String owner, String name, String desc, MethodVisitor delegate) {
-                return lhs.adapt(context, opcode, owner, name, desc, delegate)
-                    || rhs.adapt(context, opcode, owner, name, desc, delegate);
+            boolean adapt(ClassRewritingContext context, int opcode, String owner, String name, String desc, boolean intf, MethodVisitor delegate) {
+                return lhs.adapt(context, opcode, owner, name, desc, intf, delegate)
+                    || rhs.adapt(context, opcode, owner, name, desc, intf, delegate);
             }
         };
     }

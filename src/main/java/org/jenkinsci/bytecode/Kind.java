@@ -1,6 +1,6 @@
 package org.jenkinsci.bytecode;
 
-import org.kohsuke.asm3.MethodVisitor;
+import org.kohsuke.asm5.MethodVisitor;
 
 /**
  * Rewriting a method reference and a field reference takes a very similar code path,
@@ -13,17 +13,17 @@ import org.kohsuke.asm3.MethodVisitor;
 enum Kind {
     FIELD {
         @Override
-        void visit(MethodVisitor visitor, int opcode, String owner, String name, String desc) {
+        void visit(MethodVisitor visitor, int opcode, String owner, String name, String desc, boolean intf) {
             visitor.visitFieldInsn(opcode, owner, name, desc);
         }
     },
 
     METHOD {
         @Override
-        void visit(MethodVisitor visitor, int opcode, String owner, String name, String desc) {
-            visitor.visitMethodInsn(opcode,owner,name,desc);
+        void visit(MethodVisitor visitor, int opcode, String owner, String name, String desc, boolean intf) {
+            visitor.visitMethodInsn(opcode,owner,name,desc,intf);
         }
     };
 
-    abstract void visit(MethodVisitor visitor, int opcode, String owner, String name, String desc);
+    abstract void visit(MethodVisitor visitor, int opcode, String owner, String name, String desc, boolean intf);
 }

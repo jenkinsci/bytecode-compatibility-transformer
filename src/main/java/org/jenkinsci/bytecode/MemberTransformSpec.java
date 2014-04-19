@@ -1,15 +1,15 @@
 package org.jenkinsci.bytecode;
 
-import org.kohsuke.asm3.Label;
-import org.kohsuke.asm3.MethodVisitor;
-import org.kohsuke.asm3.Type;
+import org.kohsuke.asm5.Label;
+import org.kohsuke.asm5.MethodVisitor;
+import org.kohsuke.asm5.Type;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import static org.kohsuke.asm3.Opcodes.*;
+import static org.kohsuke.asm5.Opcodes.*;
 
 /**
  * All the adapters of {@linkplain #kind a specific member type} keyed by their name and descriptor.
@@ -55,7 +55,7 @@ final class MemberTransformSpec extends HashMap<NameAndType,Set<MemberAdapter>> 
         specs.add(c);
     }
 
-    public boolean rewrite(ClassRewritingContext context, int opcode, String owner, String name, String desc, MethodVisitor base) {
+    public boolean rewrite(ClassRewritingContext context, int opcode, String owner, String name, String desc, boolean intf, MethodVisitor base) {
         Set<MemberAdapter> adapters = get(new NameAndType(desc, name));
 
         boolean modified = false;
@@ -70,22 +70,22 @@ final class MemberTransformSpec extends HashMap<NameAndType,Set<MemberAdapter>> 
                 base.visitJumpInsn(IFEQ,next);
 
                 // if assignable
-                if (fr.adapt(context,opcode,owner,name,desc,base)) {
+                if (fr.adapt(context,opcode,owner,name,desc, intf, base)) {
                     modified = true;
                 } else {
                     // failed to rewrite
-                    kind.visit(base, opcode, owner, name, desc);
+                    kind.visit(base, opcode, owner, name, desc, intf);
                 }
 
                 base.visitJumpInsn(GOTO,end);
             }
 
             base.visitLabel(next);      // if this field turns out to be unrelated
-            kind.visit(base, opcode, owner, name, desc);
+            kind.visit(base, opcode, owner, name, desc, intf);
 
             base.visitLabel(end);   // all branches join here
         } else {
-            kind.visit(base, opcode, owner, name, desc);
+            kind.visit(base, opcode, owner, name, desc, intf);
         }
 
         return modified;
@@ -97,6 +97,6 @@ final class MemberTransformSpec extends HashMap<NameAndType,Set<MemberAdapter>> 
     private void println(MethodVisitor base, String msg) {
         base.visitFieldInsn(GETSTATIC, "java/lang/System","out","Ljava/io/PrintStream;");
         base.visitLdcInsn(msg);
-        base.visitMethodInsn(INVOKEVIRTUAL, "java/io/PrintStream","println","(Ljava/lang/String;)V");
+        base.visitMethodInsn(INVOKEVIRTUAL, "java/io/PrintStream","println","(Ljava/lang/String;)V", false);
     }
 }

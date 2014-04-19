@@ -1,16 +1,16 @@
 package org.jenkinsci.bytecode;
 
-import org.kohsuke.asm3.ClassVisitor;
-import org.kohsuke.asm3.Label;
-import org.kohsuke.asm3.MethodVisitor;
-import org.kohsuke.asm3.Opcodes;
-import org.kohsuke.asm3.Type;
+import org.kohsuke.asm5.ClassVisitor;
+import org.kohsuke.asm5.Label;
+import org.kohsuke.asm5.MethodVisitor;
+import org.kohsuke.asm5.Opcodes;
+import org.kohsuke.asm5.Type;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import static org.kohsuke.asm3.Opcodes.*;
+import static org.kohsuke.asm5.Opcodes.*;
 
 /**
  * Remembers what class is being rewritten and what helper methods need to be generated into this class.
@@ -43,7 +43,7 @@ final class ClassRewritingContext {
         if (idx==null)
             checkerMethods.put(suspected,idx=checkerMethods.size());
 
-        base.visitMethodInsn(INVOKESTATIC, className, checkerMethodName(idx), CHECKER_METHOD_DESCRIPTOR);
+        base.visitMethodInsn(INVOKESTATIC, className, checkerMethodName(idx), CHECKER_METHOD_DESCRIPTOR, false);
     }
 
     /**
@@ -69,7 +69,7 @@ final class ClassRewritingContext {
             mv.visitLabel(startTry);
             mv.visitLdcInsn(e.getKey());
             mv.visitVarInsn(ALOAD, 0);
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Class", "isAssignableFrom", "(Ljava/lang/Class;)Z");
+            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Class", "isAssignableFrom", "(Ljava/lang/Class;)Z", false);
             mv.visitInsn(IRETURN);
             mv.visitLabel(endTry);
 
