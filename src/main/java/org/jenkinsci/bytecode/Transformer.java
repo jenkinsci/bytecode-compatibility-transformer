@@ -4,6 +4,7 @@ import org.kohsuke.asm5.ClassReader;
 import org.kohsuke.asm5.ClassVisitor;
 import org.kohsuke.asm5.ClassWriter;
 import org.kohsuke.asm5.MethodVisitor;
+import org.kohsuke.asm5.commons.JSRInlinerAdapter;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -57,16 +58,28 @@ public class Transformer {
             return image;
 
         final ClassReader cr = new ClassReader(image);
-        final ClassWriter cw = new ClassWriter(/*ClassWriter.COMPUTE_FRAMES|*/ClassWriter.COMPUTE_MAXS);
+        final ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES|ClassWriter.COMPUTE_MAXS);
 
         final boolean[] modified = new boolean[1];
 
-        cr.accept(new ClassVisitor(ASM5,cw) {
+        // If code contains JSR/RET instructions then ASM fails to transform it with
+        // java.lang.RuntimeException: JSR/RET are not supported with computeFrames option
+        // so inline any JSR subroutines
+        ClassVisitor jsrInliner = new ClassVisitor(ASM5,cw) {
+            @Override
+            public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+                final MethodVisitor base = super.visitMethod(access, name, desc, signature, exceptions);
+                return new JSRInlinerAdapter(base, access, name, desc, signature, exceptions);
+            }
+        };
+        
+        cr.accept(new ClassVisitor(ASM5,jsrInliner) {
             private ClassRewritingContext context;
 
             @Override
             public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-                super.visit(Math.max(version,49), access, name, signature, superName, interfaces);
+                // version 50 (JDK 6) required to generate StackMapTable
+                super.visit(Math.max(version,50), access, name, signature, superName, interfaces);
                 this.context = new ClassRewritingContext(name);
             }
 
