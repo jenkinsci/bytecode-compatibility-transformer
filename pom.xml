@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.30</version>
+    <version>1.34</version>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
@@ -11,6 +11,9 @@
   <name>Bytecode transformation-based library for managing backward compatibility</name>
   <version>1.6-SNAPSHOT</version>
 
+  <properties>
+    <maven-release-plugin.version>2.5.2</maven-release-plugin.version>
+  </properties>
   <build>
     <plugins>
       <plugin>
