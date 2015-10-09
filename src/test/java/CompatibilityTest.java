@@ -35,6 +35,7 @@ public class CompatibilityTest {
     }
     
     @Test
+    @Ignore("TODO JENKINS-28799")
     public void testClassesAreOnlyReWrittenWhenNeeded() throws Exception {
         System.out.println("rewrtting tests");
         final Transformer t = new Transformer();
