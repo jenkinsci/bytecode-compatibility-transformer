@@ -42,7 +42,7 @@ public class CompatibilityTest {
         AntClassLoader cl = new AntClassLoader() {
             @Override
             protected Class<?> defineClassFromData(File container, byte[] classData, String classname) throws IOException {
-                byte[] rewritten = t.transform(classname, classData);
+                byte[] rewritten = t.transform(classname, classData, this);
                 if (rewritten!=classData ) {
                     fail(classname + " was rewritten without need");
                 }
@@ -71,7 +71,7 @@ public class CompatibilityTest {
             final File outputDir = new File("target/modified-classes");
             @Override
             protected Class<?> defineClassFromData(File container, byte[] classData, String classname) throws IOException {
-                byte[] rewritten = t.transform(classname, classData);
+                byte[] rewritten = t.transform(classname, classData, this);
                 if (rewritten!=classData) {
                     File dst = new File(outputDir,classname.replace('.','/')+".class");
                     dst.getParentFile().mkdirs();

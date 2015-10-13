@@ -2,7 +2,6 @@ package org.jenkinsci.bytecode;
 
 import org.kohsuke.asm5.ClassReader;
 import org.kohsuke.asm5.ClassVisitor;
-import org.kohsuke.asm5.ClassWriter;
 import org.kohsuke.asm5.MethodVisitor;
 import org.kohsuke.asm5.commons.JSRInlinerAdapter;
 
@@ -20,7 +19,7 @@ import static org.kohsuke.asm5.Opcodes.*;
 public class Transformer {
 
     private volatile TransformationSpec spec = new TransformationSpec(); // start with empty
-
+    
     public void loadRules(ClassLoader cl) throws IOException {
         loadRules(Collections.singleton(cl));
     }
@@ -52,13 +51,31 @@ public class Transformer {
      *      Class file image loaded from the disk.
      * @return
      *      Transformed byte code.
+     * @deprecated - see {@link #transform(String, byte[], ClassLoader)}
      */
+    @Deprecated
     public byte[] transform(final String className, byte[] image) {
+        return transform(className, image, this.getClass().getClassLoader());
+    }
+    
+    /**
+     * Transforms a class file.
+     *
+     * @param className
+     *      Binary name of the class, such as "java.security.KeyStore$Builder$FileBuilder$1"
+     * @param image
+     *      Class file image loaded from the disk.
+     * @param classLoader
+     *      The classloader to use when searching for a common parent of 2 classes (used for generating certain StackFrames)
+     * @return
+     *      Transformed byte code.
+     */
+    public byte[] transform(final String className, byte[] image, ClassLoader classLoader) {
         if (!spec.mayNeedTransformation(image))
             return image;
 
         final ClassReader cr = new ClassReader(image);
-        final ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES|ClassWriter.COMPUTE_MAXS);
+        final ClassWriter cw = new ClassWriter(classLoader, ClassWriter.COMPUTE_FRAMES|ClassWriter.COMPUTE_MAXS);
 
         final boolean[] modified = new boolean[1];
 
