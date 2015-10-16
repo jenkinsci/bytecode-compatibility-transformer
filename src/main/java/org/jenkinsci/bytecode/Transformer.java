@@ -2,7 +2,6 @@ package org.jenkinsci.bytecode;
 
 import org.kohsuke.asm5.ClassReader;
 import org.kohsuke.asm5.ClassVisitor;
-import org.kohsuke.asm5.ClassWriter;
 import org.kohsuke.asm5.MethodVisitor;
 import org.kohsuke.asm5.commons.JSRInlinerAdapter;
 
@@ -24,7 +23,7 @@ public class Transformer {
     private static Logger LOGGER = Logger.getLogger(Transformer.class.getName());
 
     private volatile TransformationSpec spec = new TransformationSpec(); // start with empty
-
+    
     public void loadRules(ClassLoader cl) throws IOException {
         loadRules(Collections.singleton(cl));
     }
@@ -56,9 +55,27 @@ public class Transformer {
      *      Class file image loaded from the disk.
      * @return
      *      Transformed byte code.
+     * @deprecated - see {@link #transform(String, byte[], ClassLoader)}
      */
+    @Deprecated
     public byte[] transform(final String className, byte[] image) {
-        LOGGER.log(Level.FINEST, "transform({0})", className);
+        return transform(className, image, this.getClass().getClassLoader());
+    }
+    
+    /**
+     * Transforms a class file.
+     *
+     * @param className
+     *      Binary name of the class, such as "java.security.KeyStore$Builder$FileBuilder$1"
+     * @param image
+     *      Class file image loaded from the disk.
+     * @param classLoader
+     *      The classloader to use when searching for a common parent of 2 classes (used for generating certain StackFrames)
+     * @return
+     *      Transformed byte code.
+     */
+    public byte[] transform(final String className, byte[] image, ClassLoader classLoader) {
+        LOGGER.log(Level.FINEST, "transform({0}, {1})", new Object[] {className, classLoader});
         if (!spec.mayNeedTransformation(image))
             return image;
 
@@ -69,8 +86,7 @@ public class Transformer {
         final boolean regenerateStackMapTable = getBytecodeVersion(image) >= 50;
 
         final ClassReader cr = new ClassReader(image);
-        
-        final ClassWriter cw = new ClassWriter(regenerateStackMapTable ? ClassWriter.COMPUTE_FRAMES|ClassWriter.COMPUTE_MAXS : ClassWriter.COMPUTE_MAXS);
+        final ClassWriter cw = new ClassWriter(classLoader, regenerateStackMapTable ? ClassWriter.COMPUTE_FRAMES|ClassWriter.COMPUTE_MAXS : ClassWriter.COMPUTE_MAXS);
 
         final boolean[] modified = new boolean[1];
 
