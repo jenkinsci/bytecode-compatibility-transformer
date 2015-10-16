@@ -1,3 +1,5 @@
+package org.jenkinsci.bytecode;
+
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;

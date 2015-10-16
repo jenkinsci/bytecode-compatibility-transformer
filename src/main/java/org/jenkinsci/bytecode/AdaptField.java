@@ -62,10 +62,12 @@ public @interface AdaptField {
             if (name.length()==0)   name = mem.getName(); // default to the same name
 
             MemberAdapter mrs = null;
-            if (e instanceof Field)
+            if (e instanceof Field) {
                 mrs = fieldToField((Field) e);
-            if (e instanceof Method)
+            }
+            if (e instanceof Method) {
                 mrs = fieldToMethod((Method) e);
+            }
             assert mrs!=null;
 
             for (Class was : af.was()) {
