@@ -19,6 +19,7 @@ import static org.jenkinsci.constant_pool_scanner.ConstantType.*;
  * Definition of what to transform.
  */
 class TransformationSpec {
+    
     /**
      * Fields by their name and type (but without the owner class) that requires rewriting.
      *
@@ -74,13 +75,18 @@ class TransformationSpec {
         try {
             ConstantPool p = ConstantPoolScanner.parse(image, FIELD_REF, METHOD_REF);
             for (FieldRefConstant r : p.list(FieldRefConstant.class)) {
-                if (fields.containsKey(new NameAndType(r)))
+                if (fields.containsKey(new NameAndType(r))) {
+                    LOGGER.log(Level.FINEST, "mayNeedTransformation returning true - fields.containsKey({0}) - {1}", new Object[] {r.getName(), r.getClazz()});
                     return true;
+                }
             }
             for (MethodRefConstant r : p.list(MethodRefConstant.class)) {
-                if (methods.containsKey(new NameAndType(r)))
+                if (methods.containsKey(new NameAndType(r))) {
+                    LOGGER.log(Level.FINEST, "mayNeedTransformation returning true - methods.containsKey({0}) - {1}", new Object[] {r.getName(), r.getClazz()});
                     return true;
+                }
             }
+            LOGGER.log(Level.FINEST, "mayNeedTransformation returning false");
             return false;
         } catch (IOException e) {
             LOGGER.log(WARNING, "Failed to parse the constant pool",e);
