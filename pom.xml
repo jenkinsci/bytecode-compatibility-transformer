@@ -9,7 +9,7 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>bytecode-compatibility-transformer</artifactId>
   <name>Bytecode transformation-based library for managing backward compatibility</name>
-  <version>1.7</version>
+  <version>1.8-SNAPSHOT</version>
 
   <properties>
     <maven-release-plugin.version>2.5.2</maven-release-plugin.version>
@@ -141,7 +141,7 @@
     <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}.git</developerConnection>
     <url>https://github.com/jenkinsci/${project.artifactId}</url>
-    <tag>bytecode-compatibility-transformer-1.7</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <repositories>
