@@ -23,22 +23,11 @@
 */
 package org.jenkinsci.bytecode;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.commons.io.IOUtils;
 import org.jenkinsci.bytecode.helper.ClassLoadingReferenceTypeHierachyReader;
-import org.kohsuke.asm5.ClassReader;
-import org.kohsuke.asm5.ClassVisitor;
-import org.kohsuke.asm5.Opcodes;
-import org.kohsuke.asm5.Type;
-import org.kohsuke.asm5.xml.ASMContentHandler;
+
 
 
 /**
@@ -77,6 +66,7 @@ final class NonClassLoadingClassWriter extends org.kohsuke.asm5.ClassWriter {
      */
     @Override
     protected String getCommonSuperClass(final String type1, final String type2) {
+        LOGGER.log(Level.FINEST, "getCommonSuperClass({0}, {1})" , new Object[] {type1, type2});
         ClassLoadingReferenceTypeHierachyReader hr = new ClassLoadingReferenceTypeHierachyReader(classLoader);
         return hr.getCommonSuperClass(type1, type2);
     }
