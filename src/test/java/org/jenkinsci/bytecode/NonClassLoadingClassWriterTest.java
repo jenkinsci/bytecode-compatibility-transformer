@@ -47,12 +47,12 @@ public class NonClassLoadingClassWriterTest {
 
     @Test
     public void testCommonSuperClassInterface() {
-        assertCommonSuperClass(HashSet.class, Set.class, Set.class); /* ASM says Set.class */
+        assertCommonSuperClass(HashSet.class, Set.class, Set.class);
         assertCommonSuperClass(HashSet.class, SortedSet.class, Object.class);
         assertCommonSuperClass(SortedSet.class, HashSet.class, Object.class);
-        assertCommonSuperClass(SortedSet.class, Set.class, Set.class); /* ASM says Set.class */
-        assertCommonSuperClass(TreeSet.class, SortedSet.class, SortedSet.class); /* ASM says SortedSet */
-        assertCommonSuperClass(SortedSet.class, TreeSet.class, SortedSet.class); /* ASM says SortedSet */
+        assertCommonSuperClass(SortedSet.class, Set.class, Set.class);
+        assertCommonSuperClass(TreeSet.class, SortedSet.class, SortedSet.class);
+        assertCommonSuperClass(SortedSet.class, TreeSet.class, SortedSet.class);
     }
 
     @Test
