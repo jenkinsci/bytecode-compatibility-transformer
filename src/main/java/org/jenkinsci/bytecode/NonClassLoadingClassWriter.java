@@ -27,6 +27,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jenkinsci.bytecode.helper.ClassLoadingReferenceTypeHierachyReader;
+import org.kohsuke.asm5.ClassWriter;
 
 
 
@@ -34,7 +35,7 @@ import org.jenkinsci.bytecode.helper.ClassLoadingReferenceTypeHierachyReader;
  * ClassWriter that will lookup classes from a specified list of {@link ClassLoader}s when searching for a common supertype.
  * @see #getCommonSuperClass(String, String)
  */
-final class NonClassLoadingClassWriter extends org.kohsuke.asm5.ClassWriter {
+final class NonClassLoadingClassWriter extends ClassWriter {
 
     /** Our logger */
     private final static Logger LOGGER = Logger.getLogger(NonClassLoadingClassWriter.class.getName());

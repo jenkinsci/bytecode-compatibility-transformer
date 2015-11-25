@@ -28,7 +28,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Source - https://github.com/Grundlefleck/ASM-NonClassloadingSimpleVerifier/blob/master/src/main/java/org/objectweb/asm/tree/analysis/TypeHierarchyReader.java
+ * Source - https://github.com/Grundlefleck/ASM-NonClassloadingSimpleVerifier/blob/fe013ce215990fc10a04e5ad14034c8b58fe2037/src/main/java/org/objectweb/asm/tree/analysis/TypeHierarchyReader.java
  */
 package org.jenkinsci.bytecode.helper;
 

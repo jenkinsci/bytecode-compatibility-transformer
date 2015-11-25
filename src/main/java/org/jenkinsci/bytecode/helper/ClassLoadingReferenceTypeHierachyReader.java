@@ -25,6 +25,7 @@ package org.jenkinsci.bytecode.helper;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.asm5.ClassReader;
@@ -55,17 +56,12 @@ public class ClassLoadingReferenceTypeHierachyReader extends TypeHierarchyReader
      */
     @Override
     protected ClassReader reader(Type t) throws IOException {
-        InputStream resourceAsStream = classLoader.getResourceAsStream(t.getInternalName() + ".class");
-        if (resourceAsStream == null) {
+        URL url = classLoader.getResource(t.getInternalName() + ".class");
+        if (url == null) {
             throw new RuntimeException("java.lang.ClassNotFoundException: " + t.getClassName());
         }
-        try {
-            byte[] classDefinition = IOUtils.toByteArray(resourceAsStream);
-            return new ClassReader(classDefinition);
-        }
-        finally {
-            resourceAsStream.close();
-        }
+        byte[] classDefinition = IOUtils.toByteArray(url);
+        return new ClassReader(classDefinition);
     }
     
 }
