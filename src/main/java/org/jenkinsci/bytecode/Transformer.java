@@ -2,6 +2,7 @@ package org.jenkinsci.bytecode;
 
 import org.kohsuke.asm5.ClassReader;
 import org.kohsuke.asm5.ClassVisitor;
+import org.kohsuke.asm5.ClassWriter;
 import org.kohsuke.asm5.MethodVisitor;
 import org.kohsuke.asm5.commons.JSRInlinerAdapter;
 
@@ -76,9 +77,10 @@ public class Transformer {
      */
     public byte[] transform(final String className, byte[] image, ClassLoader classLoader) {
         LOGGER.log(Level.FINEST, "transform({0}, {1})", new Object[] {className, classLoader});
-        if (!spec.mayNeedTransformation(image))
+        if (!spec.mayNeedTransformation(image)) {
+            LOGGER.log(Level.FINEST, "no transformation required for {0}", className);
             return image;
-
+        }
         /* 
          * StackFrames are only supported in bytecode 50 (JDK 6) and higher
          * so there is no need to recompute them for versions less than this.
@@ -86,7 +88,7 @@ public class Transformer {
         final boolean regenerateStackMapTable = getBytecodeVersion(image) >= 50;
 
         final ClassReader cr = new ClassReader(image);
-        final ClassWriter cw = new ClassWriter(classLoader, regenerateStackMapTable ? ClassWriter.COMPUTE_FRAMES|ClassWriter.COMPUTE_MAXS : ClassWriter.COMPUTE_MAXS);
+        final NonClassLoadingClassWriter cw = new NonClassLoadingClassWriter(classLoader, regenerateStackMapTable ? ClassWriter.COMPUTE_FRAMES|ClassWriter.COMPUTE_MAXS : ClassWriter.COMPUTE_MAXS);
 
         final boolean[] modified = new boolean[1];
 
