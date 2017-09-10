@@ -37,8 +37,8 @@ import java.util.TreeSet;
 
 import org.hamcrest.core.IsEqual;
 import org.junit.Test;
-import org.kohsuke.asm5.ClassWriter;
-import org.kohsuke.asm5.Opcodes;
+import org.kohsuke.asm6.ClassWriter;
+import org.kohsuke.asm6.Opcodes;
 
 import static org.junit.Assert.assertThat;
 import static org.hamcrest.core.Is.is;
