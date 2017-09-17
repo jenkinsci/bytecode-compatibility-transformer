@@ -13,6 +13,7 @@
 
   <properties>
     <maven-release-plugin.version>2.5.2</maven-release-plugin.version>
+    <findbugs.failOnError>true</findbugs.failOnError>
   </properties>
   <build>
     <plugins>
@@ -94,6 +95,23 @@
                 </artifactItem>
               </artifactItems>
             </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+        <version>3.0.5</version>
+        <configuration>
+          <failOnError>${findbugs.failOnError}</failOnError>
+        </configuration>
+        <executions>
+          <execution>
+            <id>findbugs</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>verify</phase>
           </execution>
         </executions>
       </plugin>

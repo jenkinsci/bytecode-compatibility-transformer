@@ -24,6 +24,9 @@ final class NameAndType {
 
     @Override
     public boolean equals(Object o) {
+        if (o == null || !(o instanceof NameAndType)) {
+            return false;
+        }
         NameAndType that = (NameAndType) o;
         return descriptor.equals(that.descriptor) && name.equals(that.name);
 
