@@ -1,10 +1,10 @@
 package org.jenkinsci.bytecode;
 
-import org.kohsuke.asm5.ClassReader;
-import org.kohsuke.asm5.ClassVisitor;
-import org.kohsuke.asm5.ClassWriter;
-import org.kohsuke.asm5.MethodVisitor;
-import org.kohsuke.asm5.commons.JSRInlinerAdapter;
+import org.kohsuke.asm6.ClassReader;
+import org.kohsuke.asm6.ClassVisitor;
+import org.kohsuke.asm6.ClassWriter;
+import org.kohsuke.asm6.MethodVisitor;
+import org.kohsuke.asm6.commons.JSRInlinerAdapter;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static org.kohsuke.asm5.Opcodes.*;
+import static org.kohsuke.asm6.Opcodes.*;
 
 /**
  * Transform byte code where code references bytecode rewrite annotations.

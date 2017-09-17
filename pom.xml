@@ -3,22 +3,24 @@
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.34</version>
+    <version>1.39</version>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
   <artifactId>bytecode-compatibility-transformer</artifactId>
   <name>Bytecode transformation-based library for managing backward compatibility</name>
-  <version>1.9-SNAPSHOT</version>
+  <version>2.0-SNAPSHOT</version>
 
   <properties>
     <maven-release-plugin.version>2.5.2</maven-release-plugin.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <findbugs.failOnError>true</findbugs.failOnError>
   </properties>
   <build>
     <plugins>
       <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.8</version>
         <executions>
           <execution>
             <goals>
@@ -132,8 +134,8 @@
     </dependency>
     <dependency>
       <groupId>org.kohsuke</groupId>
-      <artifactId>asm5</artifactId>
-      <version>5.0.1</version>
+      <artifactId>asm6</artifactId>
+      <version>6.0_BETA</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
@@ -164,7 +166,7 @@
   <repositories>
     <repository>
       <id>repo.jenkins-ci.org</id>
-      <url>http://repo.jenkins-ci.org/public/</url>
+      <url>https://repo.jenkins-ci.org/public/</url>
     </repository>
   </repositories>
 
