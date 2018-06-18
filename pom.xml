@@ -22,6 +22,7 @@
     <module>test-v1</module>
     <module>test-v2</module>
     <module>bytecode-compatibility-transformer</module>
+    <module>integration-tests</module>
   </modules>
   
   <scm>
