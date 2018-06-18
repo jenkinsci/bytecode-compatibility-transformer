@@ -84,8 +84,10 @@ public class CompatibilityTest {
             }
         };
 
-        cl.addPathComponent(new File("target/test-classes/"+ v));
-        cl.addPathComponent(new File("target/test-classes/client"));
+        File p = new File("../test-client/target");
+        System.out.println("looking " + p.getAbsolutePath() + "; exists: " + p.exists());
+        cl.addPathComponent(new File("../test-" + v + "/target"));
+        cl.addPathComponent(new File("../test-client/target"));
         cl.addPathComponent(new File("target/lib/ivy.jar"));
 
         t.loadRules(cl);

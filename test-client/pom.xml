@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <parent>
+    <groupId>org.jenkins-ci.main.bct</groupId>
+    <artifactId>parent-pom</artifactId>
+    <version>2.0-alpha-4-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>test-client</artifactId>
+  <name>BCT Test Client</name>
+  <version>2.0-alpha-4-SNAPSHOT</version>
+  <packaging>jar</packaging>
+
+  <properties>
+    <findbugs.failOnError>false</findbugs.failOnError>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.main.bct</groupId>
+      <artifactId>test-v1</artifactId>
+      <version>2.0-alpha-4-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.ant</groupId>
+      <artifactId>ant</artifactId>
+      <version>1.9.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.ivy</groupId>
+      <artifactId>ivy</artifactId>
+      <version>2.4.0</version>
+    </dependency>
+  </dependencies>
+</project>

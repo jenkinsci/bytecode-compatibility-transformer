@@ -1,6 +1,5 @@
 import junit.framework.*;
 
-import java.lang.Integer;
 import java.lang.String;
 import java.lang.System;
 import java.util.*;
