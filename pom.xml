@@ -9,7 +9,7 @@
 
   <groupId>org.jenkins-ci.main.bct</groupId>
   <artifactId>parent-pom</artifactId>
-  <name>Bytecode transformation-based library for managing backward compatibility</name>
+  <name>Bytecode transformation-based library - Parent POM</name>
   <version>2.0-alpha-4-SNAPSHOT</version>
   <packaging>pom</packaging>
 
