@@ -53,6 +53,7 @@ public class CompatibilityTest {
             }
         };
 
+        //TODO: fix it
         cl.addPathComponent(new File("target/test-classes/v2"));
         cl.addPathComponent(new File("target/test-classes/client"));
         cl.addPathComponent(new File("target/lib/ivy.jar"));

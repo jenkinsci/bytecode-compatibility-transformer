@@ -8,7 +8,7 @@
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>test-v1</artifactId>
+  <artifactId>bct-test-v1</artifactId>
   <name>BCT Test v1</name>
   <version>2.0-alpha-4-SNAPSHOT</version>
   <packaging>jar</packaging>
