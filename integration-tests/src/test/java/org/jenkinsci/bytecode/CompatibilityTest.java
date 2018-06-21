@@ -11,6 +11,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -52,6 +53,7 @@ public class CompatibilityTest {
             }
         };
 
+        //TODO: fix it
         cl.addPathComponent(new File("target/test-classes/v2"));
         cl.addPathComponent(new File("target/test-classes/client"));
         cl.addPathComponent(new File("target/lib/ivy.jar"));
@@ -83,9 +85,13 @@ public class CompatibilityTest {
                 return super.defineClassFromData(container, rewritten, classname);
             }
         };
-
-        cl.addPathComponent(new File("target/test-classes/"+ v));
-        cl.addPathComponent(new File("target/test-classes/client"));
+        FileFilter jarFilter = file -> file.getName().endsWith(".jar");
+        for (File jarFile : new File("../test-" + v + "/target").listFiles(jarFilter)) {
+            cl.addPathComponent(jarFile);
+        }
+        for (File jarFile : new File("../test-client/target").listFiles(jarFilter)) {
+            cl.addPathComponent(jarFile);
+        }
         cl.addPathComponent(new File("target/lib/ivy.jar"));
 
         t.loadRules(cl);

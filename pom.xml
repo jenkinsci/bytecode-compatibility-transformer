@@ -1,160 +1,29 @@
 <?xml version="1.0"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.39</version>
+    <version>1.46</version>
   </parent>
 
-  <modelVersion>4.0.0</modelVersion>
-  <artifactId>bytecode-compatibility-transformer</artifactId>
-  <name>Bytecode transformation-based library for managing backward compatibility</name>
+  <groupId>org.jenkins-ci.main.bct</groupId>
+  <artifactId>bct-parent-pom</artifactId>
+  <name>Bytecode transformation-based library - Parent POM</name>
   <version>2.0-alpha-4-SNAPSHOT</version>
+  <packaging>pom</packaging>
 
   <properties>
-    <maven-release-plugin.version>2.5.2</maven-release-plugin.version>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <findbugs.failOnError>true</findbugs.failOnError>
+    <java.level>8</java.level>
   </properties>
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <version>1.8</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <phase>test-compile</phase>
-            <configuration>
-              <tasks>
-                <mkdir dir="target/test-classes/v1" />
-                <mkdir dir="target/test-classes/v2" />
-                <mkdir dir="target/test-classes/client" />
 
-                <path id="lib">
-                  <fileset dir="target/lib" includes="*.jar" />
-                </path>
-
-                <!-- basic sanity. unmodified client and v1 should work as expected -->
-                <javac source="1.6" target="1.6" debug="true" srcdir="src/test/v1" destdir="target/test-classes/v1">
-                  <classpath>
-                    <path refid="lib" />
-                  </classpath>
-                </javac>
-                <javac source="1.6" target="1.6" debug="true" srcdir="src/test/client" destdir="target/test-classes/client">
-                  <classpath>
-                    <pathelement path="target/classes" />
-                    <pathelement path="target/test-classes/v1" />
-                    <path refid="maven.compile.classpath" />
-                    <path refid="maven.test.classpath" />
-                    <path refid="lib" />
-                  </classpath>
-                </javac>
-
-                <!-- compile v2 -->
-                <javac source="1.6" target="1.6" debug="true" srcdir="src/test/v2" destdir="target/test-classes/v2">
-                  <classpath>
-                    <path refid="maven.compile.classpath" />
-                    <pathelement path="target/classes" />
-                    <path refid="lib" />
-                  </classpath>
-                </javac>
-              </tasks>
-            </configuration>
-          </execution>
-        </executions>
-        <dependencies>
-          <dependency>
-            <groupId>com.sun</groupId>
-            <artifactId>tools</artifactId>
-            <version>1.6</version>
-            <scope>system</scope>
-            <systemPath>${java.home}/../lib/tools.jar</systemPath>
-          </dependency>
-        </dependencies>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <version>2.8</version>
-        <executions>
-          <execution>
-            <id>copy</id>
-            <phase>generate-test-resources</phase>
-            <goals>
-              <goal>copy</goal>
-            </goals>
-            <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>org.apache.ivy</groupId>
-                  <artifactId>ivy</artifactId>
-                  <version>2.3.0</version>
-                  <outputDirectory>target/lib</outputDirectory>
-                  <destFileName>ivy.jar</destFileName>
-                </artifactItem>
-              </artifactItems>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>findbugs-maven-plugin</artifactId>
-        <version>3.0.5</version>
-        <configuration>
-          <failOnError>${findbugs.failOnError}</failOnError>
-        </configuration>
-        <executions>
-          <execution>
-            <id>findbugs</id>
-            <goals>
-              <goal>check</goal>
-            </goals>
-            <phase>verify</phase>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
-
-  <dependencies>
-    <dependency>
-      <groupId>org.jenkins-ci</groupId>
-      <artifactId>annotation-indexer</artifactId>
-      <version>1.4</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.ant</groupId>
-      <artifactId>ant</artifactId>
-      <version>1.9.2</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.kohsuke</groupId>
-      <artifactId>asm6</artifactId>
-      <version>6.0_BETA</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci</groupId>
-      <artifactId>constant-pool-scanner</artifactId>
-      <version>1.2</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>2.4</version>
-    </dependency>
-
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.10</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
+  <modules>
+    <module>test-client</module>
+    <module>test-v1</module>
+    <module>test-v2</module>
+    <module>bytecode-compatibility-transformer</module>
+    <module>integration-tests</module>
+  </modules>
   
   <scm>
     <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}.git</connection>
@@ -169,6 +38,12 @@
       <url>https://repo.jenkins-ci.org/public/</url>
     </repository>
   </repositories>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>repo.jenkins-ci.org</id>
+      <url>https://repo.jenkins-ci.org/public/</url>
+    </pluginRepository>
+  </pluginRepositories>
 
   <licenses>
     <license>
