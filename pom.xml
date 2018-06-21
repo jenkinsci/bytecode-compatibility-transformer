@@ -26,9 +26,9 @@
   </modules>
   
   <scm>
-    <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}.git</connection>
-    <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}.git</developerConnection>
-    <url>https://github.com/jenkinsci/${project.artifactId}</url>
+    <connection>scm:git:git://github.com/jenkinsci/bytecode-compatibility-transformer.git</connection>
+    <developerConnection>scm:git:git@github.com:jenkinsci/bytecode-compatibility-transformer.git</developerConnection>
+    <url>https://github.com/jenkinsci/bytecode-compatibility-transformer</url>
     <tag>HEAD</tag>
   </scm>
 
