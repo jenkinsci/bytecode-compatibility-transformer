@@ -4,7 +4,7 @@ import java.util.List;
 /**
  * Test class for JENKINS-19383
  */
-class Jenkins19383 {
+public class Jenkins19383 {
     /**
      * IvySettings class has the triggers field, and that class won't have access to this class.
      */
