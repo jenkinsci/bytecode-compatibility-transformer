@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import static org.junit.Assert.*;
 
 /**
+ * Compatibility tests.
  * @author Kohsuke Kawaguchi
  */
 public class CompatibilityTest {
