@@ -1,5 +1,6 @@
 package org.jenkinsci.bytecode;
 
+import org.jenkinsci.bytecode.helper.LoggingHelper;
 import org.jenkinsci.constant_pool_scanner.ConstantPool;
 import org.jenkinsci.constant_pool_scanner.ConstantPoolScanner;
 import org.jenkinsci.constant_pool_scanner.FieldRefConstant;
@@ -12,7 +13,6 @@ import java.lang.reflect.AnnotatedElement;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static java.util.logging.Level.*;
 import static org.jenkinsci.constant_pool_scanner.ConstantType.*;
 
 /**
@@ -53,11 +53,8 @@ class TransformationSpec {
             AdapterAnnotation aa = annotation.getAnnotation(AdapterAnnotation.class);
             try {
                 f = aa.value().newInstance();
-            } catch (InstantiationException e) {
-                LOGGER.log(Level.WARNING, "Failed to instantiate "+aa.value(),e);
-                continue;
-            } catch (IllegalAccessException e) {
-                LOGGER.log(Level.WARNING, "Failed to instantiate " + aa.value(), e);
+            } catch (IllegalAccessException | InstantiationException e) {
+                LoggingHelper.conditionallyLog(LOGGER, Level.WARNING, () -> "Failed to instantiate "+aa.value(), e);
                 continue;
             }
 
@@ -76,20 +73,20 @@ class TransformationSpec {
             ConstantPool p = ConstantPoolScanner.parse(image, FIELD_REF, METHOD_REF);
             for (FieldRefConstant r : p.list(FieldRefConstant.class)) {
                 if (fields.containsKey(new NameAndType(r))) {
-                    LOGGER.log(Level.FINEST, "mayNeedTransformation returning true - fields.containsKey({0}) - {1}", new Object[] {r.getName(), r.getClazz()});
+                    LoggingHelper.conditionallyLog(LOGGER, Level.FINEST, () -> "mayNeedTransformation returning true - fields.containsKey(" +r.getName() + ") - " + r.getClazz());
                     return true;
                 }
             }
             for (MethodRefConstant r : p.list(MethodRefConstant.class)) {
                 if (methods.containsKey(new NameAndType(r))) {
-                    LOGGER.log(Level.FINEST, "mayNeedTransformation returning true - methods.containsKey({0}) - {1}", new Object[] {r.getName(), r.getClazz()});
+                    LoggingHelper.conditionallyLog(LOGGER, Level.FINEST, () -> "mayNeedTransformation returning true - methods.containsKey(" +r.getName() + ") - " + r.getClazz());
                     return true;
                 }
             }
-            LOGGER.log(Level.FINEST, "mayNeedTransformation returning false");
+            LoggingHelper.conditionallyLog(LOGGER, Level.FINEST, () -> "mayNeedTransformation returning false");
             return false;
         } catch (IOException e) {
-            LOGGER.log(WARNING, "Failed to parse the constant pool",e);
+            LoggingHelper.conditionallyLog(LOGGER, Level.WARNING, () -> "Failed to parse the constant pool", e);
             return false;
         }
     }
