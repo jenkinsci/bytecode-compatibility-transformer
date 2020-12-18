@@ -4,6 +4,12 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Helper utility to direct logging to either System.out or the given Logger (if enabled).
+ * We need this intermediate as logging can cause classloading and also involves locks, and the transformer is only ever
+ * invoked during class loading - so we should not really use logging as we could end up in a deadlock (however there
+ * are times where we really want to use it)
+ */
 public final class LoggingHelper {
 
     /**
