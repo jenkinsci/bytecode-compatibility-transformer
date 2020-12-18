@@ -6,6 +6,8 @@ import org.kohsuke.asm6.ClassWriter;
 import org.kohsuke.asm6.MethodVisitor;
 import org.kohsuke.asm6.commons.JSRInlinerAdapter;
 
+import org.jenkinsci.bytecode.helper.LoggingHelper;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -76,9 +78,9 @@ public class Transformer {
      *      Transformed byte code.
      */
     public byte[] transform(final String className, byte[] image, ClassLoader classLoader) {
-        LOGGER.log(Level.FINEST, "transform({0}, {1})", new Object[] {className, classLoader});
+        LoggingHelper.conditionallyLog(LOGGER, Level.FINEST, "transform({0}, {1})", className, classLoader);
         if (!spec.mayNeedTransformation(image)) {
-            LOGGER.log(Level.FINEST, "no transformation required for {0}", className);
+            LoggingHelper.conditionallyLog(LOGGER, Level.FINEST, "no transformation required for {0}", className);
             return image;
         }
         /* 
@@ -100,13 +102,13 @@ public class Transformer {
             @Override
             public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
                 final MethodVisitor base = super.visitMethod(access, name, desc, signature, exceptions);
-                LOGGER.log(Level.FINEST, "jsrInliner.visitMethod({0}, {1}, {2}, {3}, {4})", new Object[] {access, name, desc, signature, exceptions});
+                LoggingHelper.conditionallyLog(LOGGER, Level.FINEST, "jsrInliner.visitMethod({0}, {1}, {2}, {3}, {4})", access, name, desc, signature, exceptions);
                 return new JSRInlinerAdapter(ASM5, base, access, name, desc, signature, exceptions) {
 
                    @Override
                     public void visitEnd() {
-                        LOGGER.log(Level.FINEST, "visit end for {0}", name);
-                        super.visitEnd();
+                       LoggingHelper.conditionallyLog(LOGGER, Level.FINEST, "visit end for {0}", name);
+                       super.visitEnd();
                     } 
                 };
             }
@@ -131,37 +133,37 @@ public class Transformer {
                     public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
                         boolean _modified = spec.methods.rewrite(context,opcode,owner,name,desc, itf, base);
                         modified[0] |= _modified;
-                        LOGGER.log(Level.FINEST, "{0}.{1}({2}) {3} modified",
-                                   new Object[] { className, methodName, methodSignature == null ? "" : methodSignature,
-                                                 _modified ? "was" : "was not" });
+                        LoggingHelper.conditionallyLog(LOGGER, Level.FINEST, "{0}.{1}({2}) {3} modified",
+                                   className, methodName, methodSignature == null ? "" : methodSignature,
+                                                 _modified ? "was" : "was not" );
                     }
 
                     @Override
                     public void visitFieldInsn(int opcode, String owner, String name, String desc) {
                         boolean _modified = spec.fields.rewrite(context,opcode,owner,name,desc, false, base);
                         modified[0] |= _modified;
-                        LOGGER.log(Level.FINEST, "{0}.{1}({2}) {3} modified",
-                                   new Object[] { className, methodName, methodSignature == null ? "" : methodSignature,
-                                                 _modified ? "was" : "was not" });
+                        LoggingHelper.conditionallyLog(LOGGER, Level.FINEST, "{0}.{1}({2}) {3} modified",
+                                   className, methodName, methodSignature == null ? "" : methodSignature,
+                                                 _modified ? "was" : "was not" );
                     }
                 };
             }
 
             @Override
             public void visitEnd() {
-                LOGGER.log(Level.FINEST, "visitEnd(1) for {0}", className);
+                LoggingHelper.conditionallyLog(LOGGER, Level.FINEST, "visitEnd(1) for {0}", className);
                 context.generateCheckerMethods(cw);
                 super.visitEnd();
-                LOGGER.log(Level.FINEST, "visitEnd(2) for {0}", className);
+                LoggingHelper.conditionallyLog(LOGGER, Level.FINEST, "visitEnd(2) for {0}", className);
             }
 
         },ClassReader.SKIP_FRAMES);
 
         if (!modified[0]) {
-            LOGGER.log(Level.FINER, "class {0} was not modified.", className);
+            LoggingHelper.conditionallyLog(LOGGER, Level.FINER, "class {0} was not modified.", className);
             return image;            // untouched
         }
-        LOGGER.log(Level.FINER, "class {0} was modified.", className);
+        LoggingHelper.conditionallyLog(LOGGER, Level.FINER, "class {0} was modified.", className);
         return cw.toByteArray();
     }
     
@@ -172,7 +174,7 @@ public class Transformer {
      */
     private int getBytecodeVersion(byte[] classData) {
         int version = (( classData[6] & 0xFF ) << 8 ) | (classData[7] & 0xFF);
-        LOGGER.log(Level.FINEST, "bytecode version is {0}", version);
+        LoggingHelper.conditionallyLog(LOGGER, Level.FINEST, "bytecode version is {0}", version);
         return version;
     }
 }
