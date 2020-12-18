@@ -78,9 +78,9 @@ public class Transformer {
      *      Transformed byte code.
      */
     public byte[] transform(final String className, byte[] image, ClassLoader classLoader) {
-        LoggingHelper.conditionallyLog(LOGGER, Level.FINEST, "transform({0}, {1})", className, classLoader);
+        LoggingHelper.asyncLog(LOGGER, Level.FINEST, "transform({0}, {1})", className, classLoader);
         if (!spec.mayNeedTransformation(image)) {
-            LoggingHelper.conditionallyLog(LOGGER, Level.FINEST, "no transformation required for {0}", className);
+            LoggingHelper.asyncLog(LOGGER, Level.FINEST, "no transformation required for {0}", className);
             return image;
         }
         /* 
@@ -102,12 +102,12 @@ public class Transformer {
             @Override
             public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
                 final MethodVisitor base = super.visitMethod(access, name, desc, signature, exceptions);
-                LoggingHelper.conditionallyLog(LOGGER, Level.FINEST, "jsrInliner.visitMethod({0}, {1}, {2}, {3}, {4})", access, name, desc, signature, exceptions);
+                LoggingHelper.asyncLog(LOGGER, Level.FINEST, "jsrInliner.visitMethod({0}, {1}, {2}, {3}, {4})", access, name, desc, signature, exceptions);
                 return new JSRInlinerAdapter(ASM5, base, access, name, desc, signature, exceptions) {
 
                    @Override
                     public void visitEnd() {
-                       LoggingHelper.conditionallyLog(LOGGER, Level.FINEST, "visit end for {0}", name);
+                       LoggingHelper.asyncLog(LOGGER, Level.FINEST, "visit end for {0}", name);
                        super.visitEnd();
                     } 
                 };
@@ -133,7 +133,7 @@ public class Transformer {
                     public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
                         boolean _modified = spec.methods.rewrite(context,opcode,owner,name,desc, itf, base);
                         modified[0] |= _modified;
-                        LoggingHelper.conditionallyLog(LOGGER, Level.FINEST, "{0}.{1}({2}) {3} modified",
+                        LoggingHelper.asyncLog(LOGGER, Level.FINEST, "{0}.{1}({2}) {3} modified",
                                    className, methodName, methodSignature == null ? "" : methodSignature,
                                                  _modified ? "was" : "was not" );
                     }
@@ -142,7 +142,7 @@ public class Transformer {
                     public void visitFieldInsn(int opcode, String owner, String name, String desc) {
                         boolean _modified = spec.fields.rewrite(context,opcode,owner,name,desc, false, base);
                         modified[0] |= _modified;
-                        LoggingHelper.conditionallyLog(LOGGER, Level.FINEST, "{0}.{1}({2}) {3} modified",
+                        LoggingHelper.asyncLog(LOGGER, Level.FINEST, "{0}.{1}({2}) {3} modified",
                                    className, methodName, methodSignature == null ? "" : methodSignature,
                                                  _modified ? "was" : "was not" );
                     }
@@ -151,19 +151,19 @@ public class Transformer {
 
             @Override
             public void visitEnd() {
-                LoggingHelper.conditionallyLog(LOGGER, Level.FINEST, "visitEnd(1) for {0}", className);
+                LoggingHelper.asyncLog(LOGGER, Level.FINEST, "visitEnd(1) for {0}", className);
                 context.generateCheckerMethods(cw);
                 super.visitEnd();
-                LoggingHelper.conditionallyLog(LOGGER, Level.FINEST, "visitEnd(2) for {0}", className);
+                LoggingHelper.asyncLog(LOGGER, Level.FINEST, "visitEnd(2) for {0}", className);
             }
 
         },ClassReader.SKIP_FRAMES);
 
         if (!modified[0]) {
-            LoggingHelper.conditionallyLog(LOGGER, Level.FINER, "class {0} was not modified.", className);
+            LoggingHelper.asyncLog(LOGGER, Level.FINER, "class {0} was not modified.", className);
             return image;            // untouched
         }
-        LoggingHelper.conditionallyLog(LOGGER, Level.FINER, "class {0} was modified.", className);
+        LoggingHelper.asyncLog(LOGGER, Level.FINER, "class {0} was modified.", className);
         return cw.toByteArray();
     }
     
@@ -174,7 +174,7 @@ public class Transformer {
      */
     private int getBytecodeVersion(byte[] classData) {
         int version = (( classData[6] & 0xFF ) << 8 ) | (classData[7] & 0xFF);
-        LoggingHelper.conditionallyLog(LOGGER, Level.FINEST, "bytecode version is {0}", version);
+        LoggingHelper.asyncLog(LOGGER, Level.FINEST, "bytecode version is {0}", version);
         return version;
     }
 }

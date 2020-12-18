@@ -69,7 +69,7 @@ final class NonClassLoadingClassWriter extends ClassWriter {
      */
     @Override
     protected String getCommonSuperClass(final String type1, final String type2) {
-        LoggingHelper.conditionallyLog(LOGGER, Level.FINEST, "getCommonSuperClass({0}, {1})" , new Object[] {type1, type2});
+        LoggingHelper.asyncLog(LOGGER, Level.FINEST, "getCommonSuperClass({0}, {1})" , new Object[] {type1, type2});
         ClassLoadingReferenceTypeHierachyReader hr = new ClassLoadingReferenceTypeHierachyReader(classLoader);
         return hr.getCommonSuperClass(type1, type2);
     }

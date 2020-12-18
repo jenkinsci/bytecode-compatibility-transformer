@@ -17,7 +17,7 @@ public final class LoggingHelper {
      * @param log the Logger to use.
      * @param record the record to log
      */
-    public static void conditionallyLog(final Logger log, final LogRecord record) {
+    public static void asyncLog(final Logger log, final LogRecord record) {
         if (log.isLoggable(record.getLevel())) {
             populateStackAndLogAsync(log, record);
         }
@@ -28,7 +28,7 @@ public final class LoggingHelper {
      * @param log the Logger to use.
      * @param record the record to log
      */
-    public static void conditionallyLog(final Logger log, final Level level, final String message, Object...parameters) {
+    public static void asyncLog(final Logger log, final Level level, final String message, Object...parameters) {
         if (log.isLoggable(level)) {
             LogRecord record = new LogRecord(level, message);
             record.setParameters(parameters);
@@ -41,7 +41,7 @@ public final class LoggingHelper {
      * @param log the Logger to use.
      * @param record the record to log
      */
-    public static void conditionallyLog(final Logger log, final Level level, final Throwable throwable, final String message, Object...parameters) {
+    public static void asyncLog(final Logger log, final Level level, final Throwable throwable, final String message, Object...parameters) {
         if (log.isLoggable(level)) {
             LogRecord record = new LogRecord(level, message);
             record.setThrown(throwable);

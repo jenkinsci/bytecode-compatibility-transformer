@@ -54,10 +54,10 @@ class TransformationSpec {
             try {
                 f = aa.value().newInstance();
             } catch (InstantiationException e) {
-                LoggingHelper.conditionallyLog(LOGGER, Level.WARNING, e, "Failed to instantiate {0}", aa.value());
+                LoggingHelper.asyncLog(LOGGER, Level.WARNING, e, "Failed to instantiate {0}", aa.value());
                 continue;
             } catch (IllegalAccessException e) {
-                LoggingHelper.conditionallyLog(LOGGER, Level.WARNING, e, "Failed to instantiate {0}", aa.value());
+                LoggingHelper.asyncLog(LOGGER, Level.WARNING, e, "Failed to instantiate {0}", aa.value());
                 continue;
             }
 
@@ -76,20 +76,20 @@ class TransformationSpec {
             ConstantPool p = ConstantPoolScanner.parse(image, FIELD_REF, METHOD_REF);
             for (FieldRefConstant r : p.list(FieldRefConstant.class)) {
                 if (fields.containsKey(new NameAndType(r))) {
-                    LoggingHelper.conditionallyLog(LOGGER, Level.FINEST, "mayNeedTransformation returning true - fields.containsKey({0}) - {1}", r.getName(), r.getClazz());
+                    LoggingHelper.asyncLog(LOGGER, Level.FINEST, "mayNeedTransformation returning true - fields.containsKey({0}) - {1}", r.getName(), r.getClazz());
                     return true;
                 }
             }
             for (MethodRefConstant r : p.list(MethodRefConstant.class)) {
                 if (methods.containsKey(new NameAndType(r))) {
-                    LoggingHelper.conditionallyLog(LOGGER, Level.FINEST, "mayNeedTransformation returning true - methods.containsKey({0}) - {1}", r.getName(), r.getClazz());
+                    LoggingHelper.asyncLog(LOGGER, Level.FINEST, "mayNeedTransformation returning true - methods.containsKey({0}) - {1}", r.getName(), r.getClazz());
                     return true;
                 }
             }
-            LoggingHelper.conditionallyLog(LOGGER, Level.FINEST, "mayNeedTransformation returning false");
+            LoggingHelper.asyncLog(LOGGER, Level.FINEST, "mayNeedTransformation returning false");
             return false;
         } catch (IOException e) {
-            LoggingHelper.conditionallyLog(LOGGER, Level.WARNING, e, "Failed to parse the constant pool");
+            LoggingHelper.asyncLog(LOGGER, Level.WARNING, e, "Failed to parse the constant pool");
             return false;
         }
     }
