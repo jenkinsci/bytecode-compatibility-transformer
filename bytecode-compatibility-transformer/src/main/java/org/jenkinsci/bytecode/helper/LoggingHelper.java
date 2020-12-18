@@ -59,14 +59,14 @@ public final class LoggingHelper {
         // call to make sure the stack is populated.
         StackTraceElement[] stack = Thread.currentThread().getStackTrace();
         if (stack.length > 3) {
-            // [0] is Thrad.getStackTrace
+            // [0] is Thread.getStackTrace
             // [1] is this method
             // [2] is the caller (still this class)
-            // [3[ is the actual consumer we want
+            // [3] is the actual consumer we want
             StackTraceElement caller = stack[3];
             record.setSourceClassName(caller.getClassName());
             record.setSourceMethodName(caller.getMethodName());
         }
-        new Thread(() -> log.log(record), "bytecode-compatability-transformer async logging").start();
+        new Thread(() -> log.log(record), "bytecode-compatibility-transformer async logging").start();
     }
 }
