@@ -26,9 +26,11 @@ public final class LoggingHelper {
     /** 
      * Logs to JUL if the log level is loggable for the given logger, based on the given message and parameters 
      * @param log the Logger to use.
-     * @param record the record to log
+     * @param level the level of the log entry
+     * @param message the message (with format placeholders) for the log entry
+     * @param parameters optional parameters to go with the message
      */
-    public static void asyncLog(final Logger log, final Level level, final String message, Object...parameters) {
+    public static void asyncLog(final Logger log, final Level level, final String message, final Object...parameters) {
         if (log.isLoggable(level)) {
             LogRecord record = new LogRecord(level, message);
             record.setParameters(parameters);
@@ -39,9 +41,12 @@ public final class LoggingHelper {
     /** 
      * Logs to JUL if the log level is loggable for the given logger, based on the given message and parameters 
      * @param log the Logger to use.
-     * @param record the record to log
+     * @param level the level of the log entry
+     * @param throwable the throwable to associate with the log entry
+     * @param message the message (with format placeholders) for the log entry
+     * @param parameters optional parameters to go with the message
      */
-    public static void asyncLog(final Logger log, final Level level, final Throwable throwable, final String message, Object...parameters) {
+    public static void asyncLog(final Logger log, final Level level, final Throwable throwable, final String message, final Object...parameters) {
         if (log.isLoggable(level)) {
             LogRecord record = new LogRecord(level, message);
             record.setThrown(throwable);
