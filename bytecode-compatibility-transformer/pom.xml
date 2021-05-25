@@ -13,6 +13,10 @@
   <name>Bytecode transformation-based library for managing backward compatibility</name>
   <version>2.0-beta-3-SNAPSHOT</version>
 
+  <properties>
+    <asm.version>9.1</asm.version>
+  </properties>
+
   <build>
     <plugins>
       <plugin>
@@ -42,9 +46,14 @@
       <version>1.4</version>
     </dependency>
     <dependency>
-      <groupId>org.kohsuke</groupId>
-      <artifactId>asm6</artifactId>
-      <version>6.2</version>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm</artifactId>
+      <version>${asm.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm-commons</artifactId>
+      <version>${asm.version}</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
