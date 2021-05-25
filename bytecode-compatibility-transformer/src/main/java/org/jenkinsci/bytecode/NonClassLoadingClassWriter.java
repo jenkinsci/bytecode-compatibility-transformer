@@ -27,7 +27,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jenkinsci.bytecode.helper.ClassLoadingReferenceTypeHierachyReader;
-import org.kohsuke.asm6.ClassWriter;
+import org.objectweb.asm.ClassWriter;
 
 
 

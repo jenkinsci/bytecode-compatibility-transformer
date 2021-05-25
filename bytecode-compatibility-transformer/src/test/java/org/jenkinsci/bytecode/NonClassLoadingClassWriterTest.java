@@ -37,8 +37,8 @@ import java.util.TreeSet;
 
 import org.hamcrest.core.IsEqual;
 import org.junit.Test;
-import org.kohsuke.asm6.ClassWriter;
-import org.kohsuke.asm6.Opcodes;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
 
 import static org.junit.Assert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -80,8 +80,8 @@ public class NonClassLoadingClassWriterTest {
      * Checks that the 
      */
     public void assertCommonSuperClass(Class<?> class1, Class<?> class2) {
-        NonClassLoadingClassWriter writerUnderTest = new NonClassLoadingClassWriter(NonClassLoadingClassWriterTest.class.getClassLoader(), Opcodes.ASM5);
-        OrgClassWriter orgWriter = new OrgClassWriter(Opcodes.ASM5);
+        NonClassLoadingClassWriter writerUnderTest = new NonClassLoadingClassWriter(NonClassLoadingClassWriterTest.class.getClassLoader(), Opcodes.ASM9);
+        OrgClassWriter orgWriter = new OrgClassWriter(Opcodes.ASM9);
 
         String cls1 = class1.getName().replace('.', '/');
         String cls2 = class2.getName().replace('.', '/');
