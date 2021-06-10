@@ -34,8 +34,8 @@ package org.jenkinsci.bytecode.helper;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
-import static org.objectweb.asm.Opcodes.ACC_INTERFACE;
-import static org.objectweb.asm.Type.getType;
+import static org.kohsuke.asm6.Opcodes.ACC_INTERFACE;
+import static org.kohsuke.asm6.Type.getType;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,8 +44,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.Type;
+import org.kohsuke.asm6.ClassReader;
+import org.kohsuke.asm6.Type;
 
 import static org.jenkinsci.bytecode.helper.TypeHierarchyReader.TypeHierarchy.BOOLEAN_HIERARCHY;
 import static org.jenkinsci.bytecode.helper.TypeHierarchyReader.TypeHierarchy.BYTE_HIERARCHY;

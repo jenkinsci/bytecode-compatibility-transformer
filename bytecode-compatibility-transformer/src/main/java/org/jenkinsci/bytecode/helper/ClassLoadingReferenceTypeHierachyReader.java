@@ -28,8 +28,8 @@ import java.io.InputStream;
 import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.Type;
+import org.kohsuke.asm6.ClassReader;
+import org.kohsuke.asm6.Type;
 
 /**
  * A {@link TypeHierarchyReader} that uses a given ClassLoader to locate class definitions.

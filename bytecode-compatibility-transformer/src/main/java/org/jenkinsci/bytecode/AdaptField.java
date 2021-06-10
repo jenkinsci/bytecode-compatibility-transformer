@@ -1,8 +1,8 @@
 package org.jenkinsci.bytecode;
 
 import org.jvnet.hudson.annotation_indexer.Indexed;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Type;
+import org.kohsuke.asm6.MethodVisitor;
+import org.kohsuke.asm6.Type;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
@@ -14,7 +14,7 @@ import java.lang.reflect.Modifier;
 
 import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.*;
-import static org.objectweb.asm.Opcodes.*;
+import static org.kohsuke.asm6.Opcodes.*;
 
 /**
  * Rewrites a field reference by adapting the type of the field.

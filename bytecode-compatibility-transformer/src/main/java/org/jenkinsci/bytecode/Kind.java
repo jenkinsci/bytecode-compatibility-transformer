@@ -1,6 +1,6 @@
 package org.jenkinsci.bytecode;
 
-import org.objectweb.asm.MethodVisitor;
+import org.kohsuke.asm6.MethodVisitor;
 
 /**
  * Rewriting a method reference and a field reference takes a very similar code path,

@@ -1,15 +1,15 @@
 package org.jenkinsci.bytecode;
 
-import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Type;
+import org.kohsuke.asm6.Label;
+import org.kohsuke.asm6.MethodVisitor;
+import org.kohsuke.asm6.Type;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import static org.objectweb.asm.Opcodes.*;
+import static org.kohsuke.asm6.Opcodes.*;
 
 /**
  * All the adapters of {@linkplain #kind a specific member type} keyed by their name and descriptor.

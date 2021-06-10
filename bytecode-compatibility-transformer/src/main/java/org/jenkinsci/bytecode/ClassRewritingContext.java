@@ -1,16 +1,16 @@
 package org.jenkinsci.bytecode;
 
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
+import org.kohsuke.asm6.ClassVisitor;
+import org.kohsuke.asm6.Label;
+import org.kohsuke.asm6.MethodVisitor;
+import org.kohsuke.asm6.Opcodes;
+import org.kohsuke.asm6.Type;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import static org.objectweb.asm.Opcodes.*;
+import static org.kohsuke.asm6.Opcodes.*;
 
 /**
  * Remembers what class is being rewritten and what helper methods need to be generated into this class.
