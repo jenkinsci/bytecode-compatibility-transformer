@@ -1,10 +1,10 @@
 package org.jenkinsci.bytecode;
 
-import org.kohsuke.asm6.ClassReader;
-import org.kohsuke.asm6.ClassVisitor;
-import org.kohsuke.asm6.ClassWriter;
-import org.kohsuke.asm6.MethodVisitor;
-import org.kohsuke.asm6.commons.JSRInlinerAdapter;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.commons.JSRInlinerAdapter;
 
 import org.jenkinsci.bytecode.helper.LoggingHelper;
 
@@ -14,7 +14,7 @@ import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static org.kohsuke.asm6.Opcodes.*;
+import static org.objectweb.asm.Opcodes.*;
 
 /**
  * Transform byte code where code references bytecode rewrite annotations.
@@ -97,13 +97,13 @@ public class Transformer {
         // If code contains JSR/RET instructions then ASM fails to transform it with
         // java.lang.RuntimeException: JSR/RET are not supported with computeFrames option
         // so inline any JSR subroutines
-        ClassVisitor jsrInliner = new ClassVisitor(ASM5,cw) {
+        ClassVisitor jsrInliner = new ClassVisitor(ASM9,cw) {
             
             @Override
             public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
                 final MethodVisitor base = super.visitMethod(access, name, desc, signature, exceptions);
                 LoggingHelper.asyncLog(LOGGER, Level.FINEST, "jsrInliner.visitMethod({0}, {1}, {2}, {3}, {4})", access, name, desc, signature, exceptions);
-                return new JSRInlinerAdapter(ASM5, base, access, name, desc, signature, exceptions) {
+                return new JSRInlinerAdapter(ASM9, base, access, name, desc, signature, exceptions) {
 
                    @Override
                     public void visitEnd() {
@@ -114,7 +114,7 @@ public class Transformer {
             }
         };
         
-        cr.accept(new ClassVisitor(ASM5, regenerateStackMapTable ? jsrInliner : cw) {
+        cr.accept(new ClassVisitor(ASM9, regenerateStackMapTable ? jsrInliner : cw) {
             private ClassRewritingContext context;
 
             @Override
@@ -128,7 +128,7 @@ public class Transformer {
             public MethodVisitor visitMethod(int access, final String methodName, final String methodDescriptor, final String methodSignature, String[] exceptions) {
                 final MethodVisitor base = super.visitMethod(access, methodName, methodDescriptor, methodSignature, exceptions);
 
-                return new MethodVisitor(ASM5,base) {
+                return new MethodVisitor(ASM9,base) {
                     @Override
                     public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
                         boolean _modified = spec.methods.rewrite(context,opcode,owner,name,desc, itf, base);
